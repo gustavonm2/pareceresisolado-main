@@ -287,10 +287,10 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                                             key={m.value}
                                             type="button"
                                             onClick={() => setModalidade(m.value as 'online' | 'parecer')}
-                                            className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${modalidade === m.value ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] bg-white hover:border-[#BFDBFE]'}`}
+                                            className={`flex-1 px-3 py-2 rounded-lg border-2 text-left transition-all ${modalidade === m.value ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] bg-white hover:border-[#BFDBFE]'}`}
                                         >
-                                            <p className={`text-[11px] font-bold ${modalidade === m.value ? 'text-[#2563EB]' : 'text-[#334155]'}`}>{m.label}</p>
-                                            <p className="text-[10px] font-medium text-[#94A3B8] mt-0.5">{m.desc}</p>
+                                            <p className={`text-[10px] font-bold ${modalidade === m.value ? 'text-[#2563EB]' : 'text-[#334155]'}`}>{m.label}</p>
+                                            <p className="text-[9px] font-medium text-[#94A3B8] mt-0.5">{m.desc}</p>
                                         </button>
                                     ))}
                                 </div>
