@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Global System Utilities for Standardization */
+@layer components {
+  .table-container {
+    @apply w-full text-left border-collapse;
+  }
+
+  .table-title {
+    @apply text-[11px] font-semibold text-[#475569] px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC];
+  }
+
+  .table-text {
+    @apply text-[11px] font-medium text-[#334155] px-6 py-4 align-middle;
+  }
+
+  .table-row-hover {
+    @apply hover:bg-[#F8FAFC] transition-colors border-b border-[#F1F5F9] last:border-0;
+  }
+
+  .btn-primary {
+    @apply bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-[#BFDBFE] focus:ring-offset-2 focus:outline-none inline-flex items-center justify-center w-fit;
+  }
+
+  .btn-secondary {
+    @apply bg-white hover:bg-[#F8FAFC] text-[#334155] border border-[#E2E8F0] font-bold rounded-lg shadow-[0_1px_2px_rgba(0_0_0_/_0.05)] transition-all inline-flex items-center justify-center w-fit;
+  }
+}
