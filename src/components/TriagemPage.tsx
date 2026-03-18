@@ -142,11 +142,14 @@ const TriagemPage: React.FC = () => {
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
 
-                        {/* Queixa Inicial — inline, sem card */}
-                        <div className="bg-white rounded-[16px] shadow-sm border border-[#E2E8F0] px-6 py-4 flex items-start gap-3">
-                            <AlertCircle className="w-4 h-4 text-[#94A3B8] mt-0.5 flex-shrink-0" />
+                        {/* Queixa Inicial — destaque com borda lateral */}
+                        <div
+                            className="bg-white rounded-[16px] shadow-sm border border-[#E2E8F0] px-6 py-4 flex items-start gap-3 overflow-hidden relative"
+                            style={{ borderLeft: '3px solid var(--color-primary)' }}
+                        >
+                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
                             <div>
-                                <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wide mb-0.5">Queixa inicial do paciente</p>
+                                <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{ color: 'var(--color-primary)' }}>Queixa inicial do paciente</p>
                                 <p className="text-[12px] font-medium text-[#334155] leading-relaxed">{patient.symptoms}</p>
                             </div>
                         </div>
@@ -247,34 +250,16 @@ const TriagemPage: React.FC = () => {
                                 {/* Modalidade */}
                                 <div>
                                     <Label required>Modalidade de Atendimento</Label>
-                                    <div className="border border-[#E2E8F0] rounded-lg overflow-hidden divide-y divide-[#E2E8F0]">
-                                        {[
-                                            { value: 'parecer', label: 'Parecer Assíncrono', desc: 'Resposta via plataforma, sem necessidade de presença simultânea.' },
-                                            { value: 'online', label: 'Teleconsulta Online', desc: 'Agendamento via WhatsApp com chamada de vídeo.' },
-                                        ].map(m => {
-                                            const isActive = modalidade === m.value;
-                                            return (
-                                                <button
-                                                    key={m.value}
-                                                    type="button"
-                                                    onClick={() => setModalidade(m.value as 'online' | 'parecer')}
-                                                    className="w-full px-4 py-3 text-left transition-all"
-                                                    style={{
-                                                        backgroundColor: isActive ? '#EFF6FF' : '#FFFFFF',
-                                                        boxShadow: isActive
-                                                            ? 'inset 2px 2px 5px rgba(37,99,235,0.07), inset -2px -2px 5px rgba(255,255,255,0.65)'
-                                                            : 'none',
-                                                        borderLeft: isActive ? '3px solid #3B82F6' : '3px solid transparent',
-                                                        transition: 'all 0.2s ease',
-                                                    }}
-                                                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = '#F8FAFC'; }}
-                                                    onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = '#FFFFFF'; }}
-                                                >
-                                                    <p className={`text-[11px] font-bold ${isActive ? 'text-[#2563EB]' : 'text-[#334155]'}`}>{m.label}</p>
-                                                    {isActive && <p className="text-[10px] font-medium text-[#64748B] mt-0.5">{m.desc}</p>}
-                                                </button>
-                                            );
-                                        })}
+                                    <div className="relative">
+                                        <select
+                                            className="w-full px-3 py-2.5 text-[11px] font-medium text-[#0F172A] border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] appearance-none bg-white transition-all cursor-pointer"
+                                            value={modalidade}
+                                            onChange={e => setModalidade(e.target.value as 'online' | 'parecer')}
+                                        >
+                                            <option value="parecer">Parecer Assíncrono — Resposta via plataforma</option>
+                                            <option value="online">Teleconsulta Online — Agendamento via WhatsApp</option>
+                                        </select>
+                                        <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
                                     </div>
                                 </div>
                             </div>
