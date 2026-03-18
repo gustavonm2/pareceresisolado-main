@@ -120,40 +120,59 @@ const Sidebar = () => {
                             <button
                                 key={id}
                                 onClick={() => scrollToSection(id)}
-                                className="w-full flex items-center px-4 py-3 rounded-lg text-[12px] font-bold transition-all duration-200"
+                                className="w-full flex items-center px-4 py-3 rounded-lg text-[12px] transition-all group"
                                 style={{
-                                    backgroundColor: active ? 'var(--color-nav-active-bg)' : 'transparent',
-                                    color: active ? 'var(--color-nav-active-text)' : 'var(--color-sidebar-text)',
-                                    boxShadow: active ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                                    fontWeight: active ? 600 : 500,
+                                    backgroundColor: active ? '#E9EEF5' : 'transparent',
+                                    color: active ? '#1D4ED8' : '#6B7280',
+                                    boxShadow: active
+                                        ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
+                                        : 'none',
+                                    border: active ? '1px solid rgba(0,0,0,0.04)' : '1px solid transparent',
+                                    borderLeft: active ? '3px solid #3B82F6' : '3px solid transparent',
+                                    transition: 'all 0.2s ease',
                                 }}
+                                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
+                                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                             >
                                 <Icon
                                     className="w-[20px] h-[20px] mr-3 flex-shrink-0"
-                                    style={{ color: active ? 'var(--color-nav-active-text)' : 'var(--color-nav-icon)' }}
+                                    style={{ color: active ? '#1D4ED8' : '#6B7280', transition: 'color 0.2s ease' }}
                                 />
                                 {label}
                             </button>
                         );
                     })
                 ) : (
-                    menuItems.map(item => (
-                        <button
-                            key={item.path + item.label}
-                            onClick={() => navigate(item.path)}
-                            className="w-full flex items-center px-4 py-3 rounded-lg text-[12px] font-bold transition-all duration-200"
-                            style={{
-                                backgroundColor: isActive(item.path) ? 'var(--color-nav-active-bg)' : 'transparent',
-                                color: isActive(item.path) ? 'var(--color-nav-active-text)' : 'var(--color-sidebar-text)',
-                                boxShadow: isActive(item.path) ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
-                            }}
-                        >
-                            <item.icon
-                                className="w-[20px] h-[20px] mr-3"
-                                style={{ color: isActive(item.path) ? 'var(--color-nav-active-text)' : 'var(--color-nav-icon)' }}
-                            />
-                            {item.label}
-                        </button>
-                    ))
+                    menuItems.map(item => {
+                        const active = isActive(item.path);
+                        return (
+                            <button
+                                key={item.path + item.label}
+                                onClick={() => navigate(item.path)}
+                                className="w-full flex items-center px-4 py-3 rounded-lg text-[12px] transition-all"
+                                style={{
+                                    fontWeight: active ? 600 : 500,
+                                    backgroundColor: active ? '#E9EEF5' : 'transparent',
+                                    color: active ? '#1D4ED8' : '#6B7280',
+                                    boxShadow: active
+                                        ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
+                                        : 'none',
+                                    border: active ? '1px solid rgba(0,0,0,0.04)' : '1px solid transparent',
+                                    borderLeft: active ? '3px solid #3B82F6' : '3px solid transparent',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
+                                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+                            >
+                                <item.icon
+                                    className="w-[20px] h-[20px] mr-3"
+                                    style={{ color: active ? '#1D4ED8' : '#6B7280', transition: 'color 0.2s ease' }}
+                                />
+                                {item.label}
+                            </button>
+                        );
+                    })
                 )}
             </nav>
 
