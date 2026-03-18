@@ -105,22 +105,22 @@ const Sidebar = () => {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <nav className="flex-1 py-6 space-y-0.5 overflow-y-auto">
                 <p
-                    className="px-3 text-[11px] font-bold uppercase tracking-wider mb-4"
+                    className="px-5 text-[11px] font-bold uppercase tracking-wider mb-3"
                     style={{ color: 'var(--color-text-muted)' }}
                 >
                     {isPatient ? 'Portal do Paciente' : 'Principal'}
                 </p>
 
                 {isPatient ? (
-                    PATIENT_SECTIONS.map(({ id, label, icon: Icon }) => {
+                    PATIENT_SECTIONS.map(({ id, label }) => {
                         const active = activeSection === id;
                         return (
                             <button
                                 key={id}
                                 onClick={() => scrollToSection(id)}
-                                className="w-full flex items-center px-4 py-3 rounded-lg text-[12px] transition-all group"
+                                className="w-full flex items-center px-5 py-3 text-[12px] transition-all"
                                 style={{
                                     fontWeight: active ? 600 : 500,
                                     backgroundColor: active ? '#E9EEF5' : 'transparent',
@@ -128,17 +128,15 @@ const Sidebar = () => {
                                     boxShadow: active
                                         ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
                                         : 'none',
-                                    border: active ? '1px solid rgba(0,0,0,0.04)' : '1px solid transparent',
+                                    borderTop: '1px solid transparent',
+                                    borderBottom: '1px solid transparent',
+                                    borderRight: '1px solid transparent',
                                     borderLeft: active ? '3px solid #3B82F6' : '3px solid transparent',
                                     transition: 'all 0.2s ease',
                                 }}
                                 onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
                                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                             >
-                                <Icon
-                                    className="w-[20px] h-[20px] mr-3 flex-shrink-0"
-                                    style={{ color: active ? '#1D4ED8' : '#6B7280', transition: 'color 0.2s ease' }}
-                                />
                                 {label}
                             </button>
                         );
@@ -150,7 +148,7 @@ const Sidebar = () => {
                             <button
                                 key={item.path + item.label}
                                 onClick={() => navigate(item.path)}
-                                className="w-full flex items-center px-4 py-3 rounded-lg text-[12px] transition-all"
+                                className="w-full flex items-center px-5 py-3 text-[12px] transition-all"
                                 style={{
                                     fontWeight: active ? 600 : 500,
                                     backgroundColor: active ? '#E9EEF5' : 'transparent',
@@ -158,17 +156,15 @@ const Sidebar = () => {
                                     boxShadow: active
                                         ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
                                         : 'none',
-                                    border: active ? '1px solid rgba(0,0,0,0.04)' : '1px solid transparent',
+                                    borderTop: '1px solid transparent',
+                                    borderBottom: '1px solid transparent',
+                                    borderRight: '1px solid transparent',
                                     borderLeft: active ? '3px solid #3B82F6' : '3px solid transparent',
                                     transition: 'all 0.2s ease',
                                 }}
                                 onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
                                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                             >
-                                <item.icon
-                                    className="w-[20px] h-[20px] mr-3"
-                                    style={{ color: active ? '#1D4ED8' : '#6B7280', transition: 'color 0.2s ease' }}
-                                />
                                 {item.label}
                             </button>
                         );
