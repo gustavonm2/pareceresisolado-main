@@ -243,16 +243,10 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
                       {patient.examResults.map((exam, idx) => (
                         <tr key={idx} className="table-row-hover cursor-pointer group">
                           <td className="table-text whitespace-nowrap">
-                            <div className="flex items-center">
-                              <FileIcon className="w-4 h-4 mr-2 text-[#2563EB] group-hover:text-[#1D4ED8] transition-colors" />
-                              <span className="text-[11px] font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{exam.name}</span>
-                            </div>
+                            <span className="text-[11px] font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{exam.name}</span>
                           </td>
                           <td className="table-text whitespace-nowrap text-[11px] font-medium text-[#475569]">
-                            <div className="flex items-center">
-                              <Calendar className="w-3.5 h-3.5 mr-1.5 text-[#94A3B8]" />
-                              {exam.date}
-                            </div>
+                            {exam.date}
                           </td>
                           <td className="table-text whitespace-nowrap text-right">
                             <button className="text-[#2563EB] hover:text-[#1D4ED8] font-bold text-[11px] bg-[#EFF6FF] px-3 py-1.5 rounded-lg transition-colors">Ver Laudo</button>

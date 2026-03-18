@@ -278,21 +278,34 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                             {/* Modalidade */}
                             <div>
                                 <Label required>Modalidade de Atendimento</Label>
-                                <div className="flex gap-3">
+                                <div className="border border-[#E2E8F0] rounded-lg overflow-hidden divide-y divide-[#E2E8F0]">
                                     {[
-                                        { value: 'parecer', label: 'Parecer Assíncrono', desc: 'Resposta via plataforma' },
-                                        { value: 'online', label: 'Teleconsulta Online', desc: 'Agendamento via WhatsApp' },
-                                    ].map(m => (
-                                        <button
-                                            key={m.value}
-                                            type="button"
-                                            onClick={() => setModalidade(m.value as 'online' | 'parecer')}
-                                            className={`flex-1 px-3 py-2 rounded-lg border-2 text-left transition-all ${modalidade === m.value ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] bg-white hover:border-[#BFDBFE]'}`}
-                                        >
-                                            <p className={`text-[10px] font-bold ${modalidade === m.value ? 'text-[#2563EB]' : 'text-[#334155]'}`}>{m.label}</p>
-                                            <p className="text-[9px] font-medium text-[#94A3B8] mt-0.5">{m.desc}</p>
-                                        </button>
-                                    ))}
+                                        { value: 'parecer', label: 'Parecer Assíncrono', desc: 'Resposta via plataforma, sem necessidade de presença simultânea.' },
+                                        { value: 'online', label: 'Teleconsulta Online', desc: 'Agendamento via WhatsApp com chamada de vídeo.' },
+                                    ].map(m => {
+                                        const isActive = modalidade === m.value;
+                                        return (
+                                            <button
+                                                key={m.value}
+                                                type="button"
+                                                onClick={() => setModalidade(m.value as 'online' | 'parecer')}
+                                                className="w-full px-4 py-3 text-left transition-all"
+                                                style={{
+                                                    backgroundColor: isActive ? '#EFF6FF' : '#FFFFFF',
+                                                    boxShadow: isActive
+                                                        ? 'inset 2px 2px 5px rgba(37,99,235,0.07), inset -2px -2px 5px rgba(255,255,255,0.65)'
+                                                        : 'none',
+                                                    borderLeft: isActive ? '3px solid #3B82F6' : '3px solid transparent',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = '#F8FAFC'; }}
+                                                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = '#FFFFFF'; }}
+                                            >
+                                                <p className={`text-[11px] font-bold ${isActive ? 'text-[#2563EB]' : 'text-[#334155]'}`}>{m.label}</p>
+                                                {isActive && <p className="text-[10px] font-medium text-[#64748B] mt-0.5">{m.desc}</p>}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
