@@ -142,16 +142,12 @@ const TriagemPage: React.FC = () => {
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
 
-                        {/* Card 1 — Queixa Inicial (read-only) */}
-                        <div className="bg-white rounded-[16px] shadow-sm border border-[#E2E8F0] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center gap-2.5" style={{ borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: '#EF4444' }}>
-                                <AlertCircle className="w-4 h-4 text-[#EF4444]" />
-                                <h2 className="text-[12px] font-bold text-[#0F172A] uppercase tracking-wide">Queixa Inicial do Paciente</h2>
-                            </div>
-                            <div className="px-6 py-5">
-                                <div className="bg-[#FEF2F2] rounded-xl p-4 border border-[#FECACA]">
-                                    <p className="text-[12px] font-medium text-[#991B1B] leading-relaxed">{patient.symptoms}</p>
-                                </div>
+                        {/* Queixa Inicial — inline, sem card */}
+                        <div className="bg-white rounded-[16px] shadow-sm border border-[#E2E8F0] px-6 py-4 flex items-start gap-3">
+                            <AlertCircle className="w-4 h-4 text-[#94A3B8] mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wide mb-0.5">Queixa inicial do paciente</p>
+                                <p className="text-[12px] font-medium text-[#334155] leading-relaxed">{patient.symptoms}</p>
                             </div>
                         </div>
 
@@ -251,21 +247,34 @@ const TriagemPage: React.FC = () => {
                                 {/* Modalidade */}
                                 <div>
                                     <Label required>Modalidade de Atendimento</Label>
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="border border-[#E2E8F0] rounded-lg overflow-hidden divide-y divide-[#E2E8F0]">
                                         {[
-                                            { value: 'parecer', label: 'Parecer Assíncrono', desc: 'Resposta via plataforma' },
-                                            { value: 'online', label: 'Teleconsulta Online', desc: 'Agendamento via WhatsApp' },
-                                        ].map(m => (
-                                            <button
-                                                key={m.value}
-                                                type="button"
-                                                onClick={() => setModalidade(m.value as 'online' | 'parecer')}
-                                                className={`p-4 rounded-[10px] border-2 text-left transition-all ${modalidade === m.value ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] bg-white hover:border-[#BFDBFE]'}`}
-                                            >
-                                                <p className={`text-[11px] font-bold ${modalidade === m.value ? 'text-[#2563EB]' : 'text-[#334155]'}`}>{m.label}</p>
-                                                <p className="text-[10px] font-medium text-[#94A3B8] mt-0.5">{m.desc}</p>
-                                            </button>
-                                        ))}
+                                            { value: 'parecer', label: 'Parecer Assíncrono', desc: 'Resposta via plataforma, sem necessidade de presença simultânea.' },
+                                            { value: 'online', label: 'Teleconsulta Online', desc: 'Agendamento via WhatsApp com chamada de vídeo.' },
+                                        ].map(m => {
+                                            const isActive = modalidade === m.value;
+                                            return (
+                                                <button
+                                                    key={m.value}
+                                                    type="button"
+                                                    onClick={() => setModalidade(m.value as 'online' | 'parecer')}
+                                                    className="w-full px-4 py-3 text-left transition-all"
+                                                    style={{
+                                                        backgroundColor: isActive ? '#EFF6FF' : '#FFFFFF',
+                                                        boxShadow: isActive
+                                                            ? 'inset 2px 2px 5px rgba(37,99,235,0.07), inset -2px -2px 5px rgba(255,255,255,0.65)'
+                                                            : 'none',
+                                                        borderLeft: isActive ? '3px solid #3B82F6' : '3px solid transparent',
+                                                        transition: 'all 0.2s ease',
+                                                    }}
+                                                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = '#F8FAFC'; }}
+                                                    onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = '#FFFFFF'; }}
+                                                >
+                                                    <p className={`text-[11px] font-bold ${isActive ? 'text-[#2563EB]' : 'text-[#334155]'}`}>{m.label}</p>
+                                                    {isActive && <p className="text-[10px] font-medium text-[#64748B] mt-0.5">{m.desc}</p>}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
