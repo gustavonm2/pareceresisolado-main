@@ -58,11 +58,6 @@ const TriagemPage: React.FC = () => {
         );
     }
 
-    const priorityColors: Record<string, string> = {
-        Alta: 'bg-[#FEE2E2] text-[#DC2626] border-[#FCA5A5]',
-        Média: 'bg-[#FEF3C7] text-[#D97706] border-[#FCD34D]',
-        Baixa: 'bg-[#ECFDF5] text-[#059669] border-[#6EE7B7]',
-    };
 
     const validate = () => {
         const e: Record<string, boolean> = {};
@@ -172,16 +167,34 @@ const TriagemPage: React.FC = () => {
                                 <div>
                                     <Label required>Prioridade Sistêmica</Label>
                                     <div className="flex gap-3">
-                                        {(['Alta', 'Média', 'Baixa'] as const).map(p => (
-                                            <button
-                                                key={p}
-                                                type="button"
-                                                onClick={() => setPriority(p)}
-                                                className={`flex-1 py-2.5 rounded-[10px] border text-[11px] font-bold transition-all ${priority === p ? priorityColors[p] + ' shadow-sm scale-[1.02]' : 'border-[#E2E8F0] bg-white text-[#94A3B8] hover:border-[#CBD5E1]'}`}
-                                            >
-                                                {p}
-                                            </button>
-                                        ))}
+                                        {(['Alta', 'Média', 'Baixa'] as const).map(p => {
+                                            const isActive = priority === p;
+                                            const activeStyles: Record<string, { bg: string; text: string; border: string }> = {
+                                                Alta:  { bg: '#FEE2E2', text: '#DC2626', border: '#FCA5A5' },
+                                                Média: { bg: '#FEF3C7', text: '#D97706', border: '#FCD34D' },
+                                                Baixa: { bg: '#ECFDF5', text: '#059669', border: '#6EE7B7' },
+                                            };
+                                            return (
+                                                <button
+                                                    key={p}
+                                                    type="button"
+                                                    onClick={() => setPriority(p)}
+                                                    className="flex-1 py-2.5 rounded-[10px] text-[11px] font-bold transition-all"
+                                                    style={{
+                                                        backgroundColor: isActive ? activeStyles[p].bg : '#FFFFFF',
+                                                        color: isActive ? activeStyles[p].text : '#94A3B8',
+                                                        border: `1px solid ${isActive ? activeStyles[p].border : '#E2E8F0'}`,
+                                                        boxShadow: isActive
+                                                            ? 'inset 2px 2px 5px rgba(0,0,0,0.07), inset -2px -2px 5px rgba(255,255,255,0.65)'
+                                                            : 'none',
+                                                        fontWeight: isActive ? 700 : 500,
+                                                        transition: 'all 0.2s ease',
+                                                    }}
+                                                >
+                                                    {p}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 

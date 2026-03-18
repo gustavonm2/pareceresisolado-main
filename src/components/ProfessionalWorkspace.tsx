@@ -96,41 +96,40 @@ const ProfessionalWorkspace: React.FC = () => {
 
                 {/* Tab Navigation */}
                 <div className="bg-white rounded-[10px] shadow-sm border border-[#E2E8F0] mb-6 p-1 flex overflow-x-auto hide-scrollbar">
-                    <button
-                        onClick={() => setActiveTab('historico')}
-                        className={`flex-1 flex items-center justify-center py-3 px-6 rounded-[16px] text-[12px] font-bold transition-colors whitespace-nowrap ${activeTab === 'historico' ? 'bg-[#F8FAFC] text-[#0F172A] shadow-sm ring-1 ring-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC]'
-                            }`}
-                    >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Histórico e Prontuários
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('agenda')}
-                        className={`flex-1 flex items-center justify-center py-3 px-6 rounded-[16px] text-[12px] font-bold transition-colors whitespace-nowrap ${activeTab === 'agenda' ? 'bg-[#F8FAFC] text-[#0F172A] shadow-sm ring-1 ring-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC]'
-                            }`}
-                    >
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Agenda de Retornos
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('inbox')}
-                        className={`flex-1 flex items-center justify-center py-3 px-6 rounded-[16px] text-[12px] font-bold transition-colors whitespace-nowrap ${activeTab === 'inbox' ? 'bg-[#F8FAFC] text-[#0F172A] shadow-sm ring-1 ring-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC]'
-                            }`}
-                    >
-                        <Smartphone className="w-4 h-4 mr-2" />
-                        Inbox do Paciente
-                    </button>
-                    <button
-                        onClick={() => handleTabChange('pacientes')}
-                        className={`flex-1 flex items-center justify-center py-3 px-6 rounded-[16px] text-[12px] font-bold transition-colors whitespace-nowrap ${activeTab === 'pacientes' ? 'bg-[#F8FAFC] text-[#0F172A] shadow-sm ring-1 ring-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC]'
-                            }`}
-                    >
-                        <User2 className="w-4 h-4 mr-2" />
-                        Pacientes
-                        {(storedTriagens.length + storedPacientes.length) > 0 && (
-                            <span className="ml-2 bg-[#2563EB] text-white text-[10px] font-black px-2 py-0.5 rounded-full">{storedTriagens.length + storedPacientes.length}</span>
-                        )}
-                    </button>
+                    {([
+                        { key: 'historico', label: 'Histórico e Prontuários' },
+                        { key: 'agenda',    label: 'Agenda de Retornos' },
+                        { key: 'inbox',     label: 'Inbox do Paciente' },
+                        { key: 'pacientes', label: 'Pacientes' },
+                    ] as const).map(tab => {
+                        const active = activeTab === tab.key;
+                        return (
+                            <button
+                                key={tab.key}
+                                onClick={() => tab.key === 'pacientes' ? handleTabChange('pacientes') : setActiveTab(tab.key)}
+                                className="flex-1 flex items-center justify-center py-3 px-6 text-[12px] whitespace-nowrap rounded-[10px] transition-all"
+                                style={{
+                                    fontWeight: active ? 600 : 500,
+                                    backgroundColor: active ? '#E9EEF5' : 'transparent',
+                                    color: active ? '#1D4ED8' : '#6B7280',
+                                    boxShadow: active
+                                        ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
+                                        : 'none',
+                                    border: active ? '1px solid rgba(0,0,0,0.04)' : '1px solid transparent',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
+                                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+                            >
+                                {tab.label}
+                                {tab.key === 'pacientes' && (storedTriagens.length + storedPacientes.length) > 0 && (
+                                    <span className="ml-2 bg-[#2563EB] text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                                        {storedTriagens.length + storedPacientes.length}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* --- TAB CONTENT: HISTÓRICO --- */}
