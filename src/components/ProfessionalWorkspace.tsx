@@ -62,36 +62,87 @@ const ProfessionalWorkspace: React.FC = () => {
 
                 {/* Dashboard Cards Minimal */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#E2E8F0] flex items-center cursor-pointer hover:border-[#2563EB] transition-colors" onClick={() => setActiveTab('historico')}>
-                        <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center mr-4">
-                            <FileText className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <p className="text-[12px] font-bold text-[#64748B] capitalize mb-1">Total Atendidos</p>
-                            <h3 className="text-[14px] font-black text-[#0F172A] leading-none">128</h3>
-                        </div>
-                    </div>
+                    {/* Card 1 — Total Atendidos */}
+                    {(() => {
+                        const active = activeTab === 'historico';
+                        return (
+                            <div
+                                className="rounded-2xl p-4 flex items-center cursor-pointer transition-all duration-200"
+                                style={{
+                                    backgroundColor: active ? '#EFF6FF' : '#FFFFFF',
+                                    border: `1px solid ${active ? '#BFDBFE' : '#E2E8F0'}`,
+                                    boxShadow: active
+                                        ? 'inset 2px 2px 6px rgba(37,99,235,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
+                                        : '0 4px 20px rgba(0,0,0,0.03)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onClick={() => setActiveTab('historico')}
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center mr-4">
+                                    <FileText className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[12px] font-bold text-[#64748B] capitalize mb-1">Total Atendidos</p>
+                                    <h3 className="text-[14px] font-black text-[#0F172A] leading-none">128</h3>
+                                </div>
+                            </div>
+                        );
+                    })()}
 
-                    <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#E2E8F0] flex items-center cursor-pointer hover:border-[#F59E0B] transition-colors" onClick={() => setActiveTab('agenda')}>
-                        <div className="w-10 h-10 rounded-xl bg-[#FFFBEB] text-[#F59E0B] flex items-center justify-center mr-4">
-                            <Calendar className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <p className="text-[12px] font-bold text-[#b45309] capitalize mb-1">Agenda Amanhã</p>
-                            <h3 className="text-[14px] font-black text-[#0F172A] leading-none">5</h3>
-                        </div>
-                    </div>
+                    {/* Card 2 — Agenda Amanhã */}
+                    {(() => {
+                        const active = activeTab === 'agenda';
+                        return (
+                            <div
+                                className="rounded-2xl p-4 flex items-center cursor-pointer transition-all duration-200"
+                                style={{
+                                    backgroundColor: active ? '#FFFBEB' : '#FFFFFF',
+                                    border: `1px solid ${active ? '#FCD34D' : '#E2E8F0'}`,
+                                    boxShadow: active
+                                        ? 'inset 2px 2px 6px rgba(245,158,11,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
+                                        : '0 4px 20px rgba(0,0,0,0.03)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onClick={() => setActiveTab('agenda')}
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-[#FFFBEB] text-[#F59E0B] flex items-center justify-center mr-4">
+                                    <Calendar className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[12px] font-bold text-[#b45309] capitalize mb-1">Agenda Amanhã</p>
+                                    <h3 className="text-[14px] font-black text-[#0F172A] leading-none">5</h3>
+                                </div>
+                            </div>
+                        );
+                    })()}
 
-                    <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#E2E8F0] flex items-center cursor-pointer hover:border-[#10B981] transition-colors" onClick={() => setActiveTab('inbox')}>
-                        <div className="w-10 h-10 rounded-xl bg-[#ECFDF5] text-[#10B981] flex items-center justify-center mr-4 relative">
-                            <MessageCircle className="w-5 h-5" />
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-                        </div>
-                        <div>
-                            <p className="text-[12px] font-bold text-[#047857] capitalize mb-1">Inbox WhatsApp</p>
-                            <h3 className="text-[14px] font-black text-[#0F172A] leading-none">1 Novo</h3>
-                        </div>
-                    </div>
+                    {/* Card 3 — Inbox WhatsApp */}
+                    {(() => {
+                        const active = activeTab === 'inbox';
+                        return (
+                            <div
+                                className="rounded-2xl p-4 flex items-center cursor-pointer transition-all duration-200"
+                                style={{
+                                    backgroundColor: active ? '#ECFDF5' : '#FFFFFF',
+                                    border: `1px solid ${active ? '#6EE7B7' : '#E2E8F0'}`,
+                                    boxShadow: active
+                                        ? 'inset 2px 2px 6px rgba(16,185,129,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
+                                        : '0 4px 20px rgba(0,0,0,0.03)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onClick={() => setActiveTab('inbox')}
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-[#ECFDF5] text-[#10B981] flex items-center justify-center mr-4 relative">
+                                    <MessageCircle className="w-5 h-5" />
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+                                </div>
+                                <div>
+                                    <p className="text-[12px] font-bold text-[#047857] capitalize mb-1">Inbox WhatsApp</p>
+                                    <h3 className="text-[14px] font-black text-[#0F172A] leading-none">1 Novo</h3>
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Tab Navigation */}
