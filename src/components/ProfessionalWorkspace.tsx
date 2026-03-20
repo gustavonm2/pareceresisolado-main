@@ -3,7 +3,7 @@ import {
     Users, Calendar, MessageCircle, Filter, Search, Clock,
     CheckCircle, AlertCircle, FileText, Smartphone, MoreVertical, User2
 } from 'lucide-react';
-import { getOpinioes, getConsulta, confirmConsultaByDoctor, getTriagens, type StoredOpinion, type StoredConsulta, type StoredTriagem } from '../utils/patientStore';
+import { getOpinioes, getConsulta, confirmConsultaByDoctor, getTriagens, getRepassesDisponiveis, assumirRepasse, type StoredOpinion, type StoredConsulta, type StoredTriagem, type StoredRepasse } from '../utils/patientStore';
 
 const mockHistory = [
     { id: '1', patient: 'João Silva', date: '16/03/2026', time: '09:30', pathology: 'Hipertensão', risk: 'Baixo', status: 'Finalizado' },
@@ -26,11 +26,13 @@ const ProfessionalWorkspace: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'historico' | 'agenda' | 'inbox' | 'pacientes'>('historico');
     const [storedPacientes, setStoredPacientes] = useState<StoredOpinion[]>([]);
     const [storedTriagens, setStoredTriagens] = useState<StoredTriagem[]>([]);
+    const [storedRepasses, setStoredRepasses] = useState<StoredRepasse[]>([]);
     const [consulta, setConsulta] = useState<StoredConsulta | null>(null);
 
     useEffect(() => {
         setStoredPacientes(getOpinioes());
         setStoredTriagens(getTriagens());
+        setStoredRepasses(getRepassesDisponiveis());
         setConsulta(getConsulta());
     }, []);
 
@@ -42,7 +44,10 @@ const ProfessionalWorkspace: React.FC = () => {
     // Refresh triagens when tab is activated
     const handleTabChange = (tab: typeof activeTab) => {
         setActiveTab(tab);
-        if (tab === 'pacientes') setStoredTriagens(getTriagens());
+        if (tab === 'pacientes') {
+            setStoredTriagens(getTriagens());
+            setStoredRepasses(getRepassesDisponiveis());
+        }
     };
 
     return (
@@ -52,7 +57,7 @@ const ProfessionalWorkspace: React.FC = () => {
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-[12px] font-bold text-[#0F172A] flex items-center">
-                        <Users className="w-6 h-6 mr-3 text-[#2563EB]" />
+                        <Users className="w-6 h-6 mr-3 text-[#1D3461]" />
                         Atendimentos e Pacientes
                     </h1>
                     <p className="text-[#64748B] text-[12px] font-medium mt-1">
@@ -69,16 +74,16 @@ const ProfessionalWorkspace: React.FC = () => {
                             <div
                                 className="rounded-2xl p-4 flex items-center cursor-pointer transition-all duration-200"
                                 style={{
-                                    backgroundColor: active ? '#EFF6FF' : '#FFFFFF',
-                                    border: `1px solid ${active ? '#BFDBFE' : '#E2E8F0'}`,
+                                    backgroundColor: active ? '#EEF4FA' : '#FFFFFF',
+                                    border: `1px solid ${active ? '#A8C4DA' : '#E2E8F0'}`,
                                     boxShadow: active
-                                        ? 'inset 2px 2px 6px rgba(37,99,235,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
+                                        ? 'inset 2px 2px 6px rgba(29,52,97,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
                                         : '0 4px 20px rgba(0,0,0,0.03)',
                                     transition: 'all 0.2s ease',
                                 }}
                                 onClick={() => setActiveTab('historico')}
                             >
-                                <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center mr-4">
+                                <div className="w-10 h-10 rounded-xl bg-[#EEF4FA] text-[#1D3461] flex items-center justify-center mr-4">
                                     <FileText className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -162,7 +167,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                 style={{
                                     fontWeight: active ? 600 : 500,
                                     backgroundColor: active ? '#E9EEF5' : 'transparent',
-                                    color: active ? '#1D4ED8' : '#6B7280',
+                                    color: active ? '#162749' : '#6B7280',
                                     boxShadow: active
                                         ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
                                         : 'none',
@@ -173,9 +178,9 @@ const ProfessionalWorkspace: React.FC = () => {
                                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                             >
                                 {tab.label}
-                                {tab.key === 'pacientes' && (storedTriagens.length + storedPacientes.length) > 0 && (
-                                    <span className="ml-2 bg-[#2563EB] text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                                        {storedTriagens.length + storedPacientes.length}
+                                {tab.key === 'pacientes' && (storedTriagens.length + storedPacientes.length + storedRepasses.length) > 0 && (
+                                    <span className="ml-2 bg-[#1D3461] text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                                        {storedTriagens.length + storedPacientes.length + storedRepasses.length}
                                     </span>
                                 )}
                             </button>
@@ -193,12 +198,12 @@ const ProfessionalWorkspace: React.FC = () => {
                                 <input
                                     type="text"
                                     placeholder="Pesquisar paciente..."
-                                    className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#1D3461] transition-all"
                                 />
                             </div>
                             <div className="flex flex-wrap gap-3">
                                 <div className="relative">
-                                    <select className="appearance-none pl-10 pr-10 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] font-bold text-[#475569] focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all cursor-pointer">
+                                    <select className="appearance-none pl-10 pr-10 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] font-bold text-[#475569] focus:outline-none focus:ring-2 focus:ring-[#1D3461] transition-all cursor-pointer">
                                         <option value="">Filtro: Patologia</option>
                                         <option value="cardio">Cardiologia</option>
                                         <option value="endocrino">Endocrinologia</option>
@@ -206,7 +211,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                     <Filter className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-[#94A3B8]" />
                                 </div>
                                 <div className="relative">
-                                    <select className="appearance-none pl-10 pr-10 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] font-bold text-[#475569] focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all cursor-pointer">
+                                    <select className="appearance-none pl-10 pr-10 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] font-bold text-[#475569] focus:outline-none focus:ring-2 focus:ring-[#1D3461] transition-all cursor-pointer">
                                         <option value="">Filtro: Risco</option>
                                         <option value="alto">Alto</option>
                                         <option value="medio">Médio</option>
@@ -238,7 +243,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                             <td className="table-text text-[11px] whitespace-nowrap font-bold text-[#0F172A]">{item.patient}</td>
                                             <td className="table-text text-[11px] whitespace-nowrap text-[#475569]">{item.pathology}</td>
                                             <td className="table-text whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold capitalize ${item.risk === 'Alto' ? 'bg-[#FEF2F2] text-[#DC2626]' :
+                                                <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold capitalize ${item.risk === 'Alto' ? 'bg-[#FEF2F2] text-[#C0392B]' :
                                                     item.risk === 'Médio' ? 'bg-[#FFFBEB] text-[#D97706]' : 'bg-[#F0FDF4] text-[#16A34A]'
                                                     }`}>
                                                     {item.risk}
@@ -250,7 +255,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td className="table-text whitespace-nowrap text-right">
-                                                <button className="text-[#2563EB] hover:text-[#1D4ED8] font-bold text-[11px] bg-[#EFF6FF] px-3 py-1.5 rounded-lg transition-colors">
+                                                <button className="text-[#1D3461] hover:text-[#162749] font-bold text-[11px] bg-[#EEF4FA] px-3 py-1.5 rounded-lg transition-colors">
                                                     Prontuário
                                                 </button>
                                             </td>
@@ -303,7 +308,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                                 {consulta.status !== 'confirmado' ? (
                                                     <button
                                                         onClick={handleConfirmConsulta}
-                                                        className="text-[#2563EB] hover:text-[#1D4ED8] font-bold text-[11px] bg-[#EFF6FF] px-3 py-1.5 rounded-lg transition-colors"
+                                                        className="text-[#1D3461] hover:text-[#162749] font-bold text-[11px] bg-[#EEF4FA] px-3 py-1.5 rounded-lg transition-colors"
                                                     >
                                                         Confirmar
                                                     </button>
@@ -371,7 +376,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                     </div>
                                     {msg.unread && (
                                         <div className="flex-shrink-0 flex items-center">
-                                            <div className="w-3 h-3 bg-[#2563EB] rounded-full"></div>
+                                            <div className="w-3 h-3 bg-[#1D3461] rounded-full"></div>
                                         </div>
                                     )}
                                 </div>
@@ -389,12 +394,12 @@ const ProfessionalWorkspace: React.FC = () => {
                             <div className="px-6 py-5 border-b border-[#E2E8F0] bg-white flex justify-between items-center">
                                 <div>
                                     <h2 className="text-[12px] font-bold text-[#0F172A] flex items-center">
-                                        <Users className="w-5 h-5 mr-2 text-[#2563EB]" />
+                                        <Users className="w-5 h-5 mr-2 text-[#1D3461]" />
                                         Pacientes Encaminhados (Triagem)
                                     </h2>
                                     <p className="text-[11px] font-medium text-[#64748B] mt-1">Encaminhados pelo triador — aguardando parecer.</p>
                                 </div>
-                                <span className="bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] text-[11px] font-bold px-3 py-1.5 rounded-lg">
+                                <span className="bg-[#EEF4FA] border border-[#A8C4DA] text-[#1D3461] text-[11px] font-bold px-3 py-1.5 rounded-lg">
                                     {storedTriagens.length} Paciente(s)
                                 </span>
                             </div>
@@ -416,7 +421,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                             <tr key={t.id} className="table-row-hover">
                                                 <td className="table-text whitespace-nowrap">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="w-7 h-7 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center text-[11px] font-black flex-shrink-0">
+                                                        <div className="w-7 h-7 rounded-full bg-[#EEF4FA] text-[#1D3461] flex items-center justify-center text-[11px] font-black flex-shrink-0">
                                                             {t.patientName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                                         </div>
                                                         <div>
@@ -426,11 +431,11 @@ const ProfessionalWorkspace: React.FC = () => {
                                                     </div>
                                                 </td>
                                                 <td className="table-text text-[11px] whitespace-nowrap">
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EFF6FF] text-[#2563EB]">{t.especialidade}</span>
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EEF4FA] text-[#1D3461]">{t.especialidade}</span>
                                                 </td>
                                                 <td className="table-text whitespace-nowrap">
                                                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold capitalize border ${
-                                                        t.priority === 'Alta' ? 'bg-[#FEE2E2] text-[#DC2626] border-[#FCA5A5]' :
+                                                        t.priority === 'Alta' ? 'bg-[#FEE2E2] text-[#C0392B] border-[#FCA5A5]' :
                                                         t.priority === 'Média' ? 'bg-[#FEF3C7] text-[#D97706] border-[#FCD34D]' :
                                                         'bg-[#ECFDF5] text-[#059669] border-[#6EE7B7]'
                                                     }`}>
@@ -441,14 +446,14 @@ const ProfessionalWorkspace: React.FC = () => {
                                                 <td className="table-text text-[11px] text-[#475569] max-w-[200px] truncate" title={t.hipotese}>{t.hipotese}</td>
                                                 <td className="table-text text-[11px] whitespace-nowrap">
                                                     <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold ${
-                                                        t.modalidade === 'online' ? 'bg-[#EFF6FF] text-[#2563EB]' : 'bg-[#F5F3FF] text-[#7C3AED]'
+                                                        t.modalidade === 'online' ? 'bg-[#EEF4FA] text-[#1D3461]' : 'bg-[#F5F3FF] text-[#7C3AED]'
                                                     }`}>
                                                         {t.modalidade === 'online' ? 'Teleconsulta' : 'Parecer Assíncrono'}
                                                     </span>
                                                 </td>
                                                 <td className="table-text text-[11px] whitespace-nowrap font-medium text-[#64748B]">{t.triadoEm}</td>
                                                 <td className="table-text whitespace-nowrap text-right">
-                                                    <button className="text-[#2563EB] hover:text-[#1D4ED8] font-bold text-[11px] bg-[#EFF6FF] px-3 py-1.5 rounded-lg transition-colors">
+                                                    <button className="text-[#1D3461] hover:text-[#162749] font-bold text-[11px] bg-[#EEF4FA] px-3 py-1.5 rounded-lg transition-colors">
                                                         Iniciar Parecer
                                                     </button>
                                                 </td>
@@ -465,6 +470,84 @@ const ProfessionalWorkspace: React.FC = () => {
                                 </table>
                             </div>
                         </div>
+
+                        {/* Pacientes em Repasse */}
+                        {storedRepasses.length > 0 && (
+                            <div className="bg-white rounded-[12px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#FED7AA] overflow-hidden">
+                                <div className="px-6 py-5 border-b border-[#FED7AA] flex justify-between items-center" style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)' }}>
+                                    <div>
+                                        <h2 className="text-[12px] font-bold text-[#0F172A] flex items-center">
+                                            <span className="mr-2 text-base">🔀</span>
+                                            Pacientes em Repasse
+                                        </h2>
+                                        <p className="text-[11px] font-medium text-[#92400E] mt-1">Casos repassados por outros pareceristas — disponíveis para assumir.</p>
+                                    </div>
+                                    <span className="bg-orange-100 border border-orange-300 text-orange-700 text-[11px] font-bold px-3 py-1.5 rounded-lg">
+                                        {storedRepasses.length} Disponível(is)
+                                    </span>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="table-container">
+                                        <thead className="bg-[#FFF7ED]">
+                                            <tr>
+                                                <th className="table-title">PACIENTE</th>
+                                                <th className="table-title">ESPECIALIDADE</th>
+                                                <th className="table-title">PRIORIDADE</th>
+                                                <th className="table-title">MOTIVO DO REPASSE</th>
+                                                <th className="table-title">REPASSADO EM</th>
+                                                <th className="table-title text-right">AÇÃO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {storedRepasses.map((r) => (
+                                                <tr key={r.id} className="table-row-hover">
+                                                    <td className="table-text whitespace-nowrap">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-[11px] font-black flex-shrink-0">
+                                                                {r.patientName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[11px] font-bold text-[#0F172A]">{r.patientName}</p>
+                                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">
+                                                                    🔀 Repasse
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="table-text text-[11px] whitespace-nowrap">
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EEF4FA] text-[#1D3461]">{r.especialidade}</span>
+                                                    </td>
+                                                    <td className="table-text whitespace-nowrap">
+                                                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold capitalize border ${
+                                                            r.priority === 'Alta' ? 'bg-[#FEE2E2] text-[#C0392B] border-[#FCA5A5]' :
+                                                            r.priority === 'Média' ? 'bg-[#FEF3C7] text-[#D97706] border-[#FCD34D]' :
+                                                            'bg-[#ECFDF5] text-[#059669] border-[#6EE7B7]'
+                                                        }`}>
+                                                            {r.priority}
+                                                        </span>
+                                                    </td>
+                                                    <td className="table-text text-[11px] text-[#475569] max-w-[200px] truncate" title={r.motivoRepasse}>
+                                                        {r.motivoRepasse}
+                                                    </td>
+                                                    <td className="table-text text-[11px] whitespace-nowrap font-medium text-[#64748B]">{r.repassadoEm}</td>
+                                                    <td className="table-text whitespace-nowrap text-right">
+                                                        <button
+                                                            onClick={() => {
+                                                                assumirRepasse(r.id);
+                                                                setStoredRepasses(getRepassesDisponiveis());
+                                                            }}
+                                                            className="text-orange-700 hover:text-orange-900 font-bold text-[11px] bg-orange-100 hover:bg-orange-200 px-3 py-1.5 rounded-lg transition-colors"
+                                                        >
+                                                            Assumir Caso
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Pareceres já emitidos */}
                         {storedPacientes.length > 0 && (
@@ -507,7 +590,7 @@ const ProfessionalWorkspace: React.FC = () => {
                                                     <td className="table-text text-[11px] whitespace-nowrap text-[#475569]">{p.doctor}</td>
                                                     <td className="table-text text-[11px] whitespace-nowrap font-medium text-[#64748B]">{p.date}</td>
                                                     <td className="table-text whitespace-nowrap text-right">
-                                                        <button className="text-[#2563EB] hover:text-[#1D4ED8] font-bold text-[11px] bg-[#EFF6FF] px-3 py-1.5 rounded-lg transition-colors">
+                                                        <button className="text-[#1D3461] hover:text-[#162749] font-bold text-[11px] bg-[#EEF4FA] px-3 py-1.5 rounded-lg transition-colors">
                                                             Ver Prontuário
                                                         </button>
                                                     </td>

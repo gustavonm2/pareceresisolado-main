@@ -12,7 +12,7 @@ const RESOLVED_OPINIONS = TOTAL_OPINIONS - PENDING_OPINIONS;
 
 // Complementary colors (Amber/Orange) to contrast with blue
 const dataTotalPending = [
-    { name: 'Resolvidos', value: RESOLVED_OPINIONS, color: '#3B82F6' },
+    { name: 'Resolvidos', value: RESOLVED_OPINIONS, color: '#2C4E6E' },
     { name: 'Pendentes', value: PENDING_OPINIONS, color: '#E2E8F0' },
 ];
 
@@ -83,8 +83,8 @@ const DashboardMetrics: React.FC = () => {
                     <h2 className="text-[12px] font-bold text-[#64748B] capitalize mb-4">Acesso Rápido</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {userRole === 'triador' && (
-                            <button onClick={() => navigate('/pacientes')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
-                                <div className="w-10 h-10 shrink-0 rounded-lg text-[#2563EB] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EFF6FF] transition-colors">
+                            <button onClick={() => navigate('/pacientes')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#1D3461] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
+                                <div className="w-10 h-10 shrink-0 rounded-lg text-[#1D3461] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EEF4FA] transition-colors">
                                     <Users className="w-5 h-5" />
                                 </div>
                                 <div className="flex flex-col items-start overflow-hidden">
@@ -95,8 +95,8 @@ const DashboardMetrics: React.FC = () => {
                         )}
 
                         {(userRole === 'parecerista' || userRole === 'telemedicina') && (
-                            <button onClick={() => navigate('/pareceres')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
-                                <div className="w-10 h-10 shrink-0 rounded-lg text-[#2563EB] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EFF6FF] transition-colors">
+                            <button onClick={() => navigate('/pareceres')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#1D3461] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
+                                <div className="w-10 h-10 shrink-0 rounded-lg text-[#1D3461] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EEF4FA] transition-colors">
                                     <Share2 className="w-5 h-5" />
                                 </div>
                                 <div className="flex flex-col items-start overflow-hidden">
@@ -106,8 +106,8 @@ const DashboardMetrics: React.FC = () => {
                             </button>
                         )}
 
-                        <button onClick={() => navigate('/atendimentos')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
-                            <div className="w-10 h-10 shrink-0 rounded-lg text-[#2563EB] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EFF6FF] transition-colors">
+                        <button onClick={() => navigate('/atendimentos')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#1D3461] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
+                            <div className="w-10 h-10 shrink-0 rounded-lg text-[#1D3461] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EEF4FA] transition-colors">
                                 <Activity className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col items-start overflow-hidden">
@@ -116,8 +116,8 @@ const DashboardMetrics: React.FC = () => {
                             </div>
                         </button>
 
-                        <button onClick={() => navigate('/gestao')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
-                            <div className="w-10 h-10 shrink-0 rounded-lg text-[#2563EB] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EFF6FF] transition-colors">
+                        <button onClick={() => navigate('/gestao')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#1D3461] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
+                            <div className="w-10 h-10 shrink-0 rounded-lg text-[#1D3461] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EEF4FA] transition-colors">
                                 <Briefcase className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col items-start overflow-hidden">
@@ -126,8 +126,8 @@ const DashboardMetrics: React.FC = () => {
                             </div>
                         </button>
 
-                        <button onClick={() => window.open('/cadastro', '_blank')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
-                            <div className="w-10 h-10 shrink-0 rounded-lg text-[#2563EB] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EFF6FF] transition-colors">
+                        <button onClick={() => window.open('/cadastro', '_blank')} className="bg-white p-3 rounded-xl border border-[#E2E8F0] shadow-sm hover:border-[#1D3461] hover:shadow-md transition-all flex flex-row items-center cursor-pointer group">
+                            <div className="w-10 h-10 shrink-0 rounded-lg text-[#1D3461] flex items-center justify-center mr-3 bg-[#F8FAFC] group-hover:bg-[#EEF4FA] transition-colors">
                                 <Users className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col items-start overflow-hidden">
@@ -169,7 +169,7 @@ const DashboardMetrics: React.FC = () => {
                             </ResponsiveContainer>
                         </div>
                         <div className="flex justify-center gap-5 mt-4 text-[12px] font-medium text-[#475569]">
-                            <div className="flex items-center"><span className="w-3 h-3 bg-[#3B82F6] rounded mr-2"></span> Resolvidos</div>
+                            <div className="flex items-center"><span className="w-3 h-3 bg-[#2C4E6E] rounded mr-2"></span> Resolvidos</div>
                             <div className="flex items-center"><span className="w-3 h-3 bg-[#E2E8F0] rounded border border-[#CBD5E1] mr-2"></span> Pendentes</div>
                         </div>
                         <p className="text-[12px] text-[#94A3B8] font-medium mt-3 text-center">Clique no gráfico para ver pacientes</p>
@@ -272,11 +272,11 @@ const DashboardMetrics: React.FC = () => {
                                                 <td className="table-text text-[11px] font-bold">{item.patient}</td>
                                                 <td className="table-text text-right">
                                                     {item.priority ? (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] capitalize">
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#FEF2F2] text-[#C0392B] border border-[#FECACA] capitalize">
                                                             {item.priority} - {item.time}
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] capitalize">
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EEF4FA] text-[#1D3461] border border-[#A8C4DA] capitalize">
                                                             {item.status}
                                                         </span>
                                                     )}

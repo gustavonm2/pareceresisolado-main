@@ -1,5 +1,28 @@
 export type RiskRating = 'red' | 'orange' | 'yellow' | 'green' | 'blue';
 
+export type ProfessionalRole = 'triador' | 'parecerista';
+
+export interface ClinicMember {
+    id: string;
+    name: string;
+    email: string;
+    password: string;
+    role: ProfessionalRole;
+    groupId: string;
+    createdAt: string;
+}
+
+export interface ClinicGroup {
+    id: string;
+    name: string;
+    specialty: string;
+    adminName: string;
+    adminEmail: string;
+    adminPassword: string;
+    members: ClinicMember[];
+    createdAt: string;
+}
+
 export interface QueueItem {
     id: string;
     patientName: string;

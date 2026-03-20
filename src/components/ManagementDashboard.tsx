@@ -45,18 +45,18 @@ const SlotRow: React.FC<{
             type="time"
             value={slot.start}
             onChange={e => onUpdate(slot.id, 'start', e.target.value)}
-            className="w-[100px] px-2.5 py-1.5 text-[11px] font-bold text-[#0F172A] border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-[#F8FAFC] hover:border-[#94A3B8] transition-all"
+            className="w-[100px] px-2.5 py-1.5 text-[11px] font-bold text-[#0F172A] border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3461] bg-[#F8FAFC] hover:border-[#94A3B8] transition-all"
         />
         <span className="text-[11px] font-bold text-[#94A3B8]">até</span>
         <input
             type="time"
             value={slot.end}
             onChange={e => onUpdate(slot.id, 'end', e.target.value)}
-            className="w-[100px] px-2.5 py-1.5 text-[11px] font-bold text-[#0F172A] border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-[#F8FAFC] hover:border-[#94A3B8] transition-all"
+            className="w-[100px] px-2.5 py-1.5 text-[11px] font-bold text-[#0F172A] border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3461] bg-[#F8FAFC] hover:border-[#94A3B8] transition-all"
         />
         <button
             onClick={() => onRemove(slot.id)}
-            className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#EF4444] hover:bg-[#FEF2F2] opacity-0 group-hover:opacity-100 transition-all"
+            className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#C0392B] hover:bg-[#FEF2F2] opacity-0 group-hover:opacity-100 transition-all"
             title="Remover horário"
         >
             <Trash2 className="w-3.5 h-3.5" />
@@ -129,10 +129,10 @@ const AgendaSection: React.FC = () => {
         <div className="bg-white rounded-[12px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#E2E8F0] overflow-hidden">
 
             {/* Card Header */}
-            <div className="px-6 py-5 border-b border-[#E2E8F0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: '#2563EB' }}>
+            <div className="px-6 py-5 border-b border-[#E2E8F0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: '#1D3461' }}>
                 <div>
                     <div className="flex items-center gap-2.5 mb-1">
-                        <Calendar className="w-4 h-4 text-[#2563EB]" />
+                        <Calendar className="w-4 h-4 text-[#1D3461]" />
                         <h2 className="text-[12px] font-bold text-[#0F172A] uppercase tracking-wide">Minha Agenda de Disponibilidade</h2>
                     </div>
                     <p className="text-[11px] font-medium text-[#64748B]">
@@ -142,7 +142,7 @@ const AgendaSection: React.FC = () => {
                 </div>
                 <button
                     onClick={handleSave}
-                    className={`flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-[10px] font-bold text-[11px] transition-all shadow-sm ${saved ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' : 'bg-[#2563EB] text-white hover:bg-[#1D4ED8] hover:scale-[1.01]'}`}
+                    className={`flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-[10px] font-bold text-[11px] transition-all shadow-sm ${saved ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' : 'bg-[#1D3461] text-white hover:bg-[#162749] hover:scale-[1.01]'}`}
                 >
                     {saved ? <><CheckCircle className="w-4 h-4" /> Salvo!</> : <><Save className="w-4 h-4" /> Salvar Agenda</>}
                 </button>
@@ -151,7 +151,7 @@ const AgendaSection: React.FC = () => {
             {/* Summary Chips */}
             <div className="px-6 py-3 bg-[#F8FAFC] border-b border-[#E2E8F0] flex flex-wrap gap-3 items-center">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#475569]">
-                    <span className="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#1D3461]"></span>
                     {enabledDaysCount} dias ativos
                 </div>
                 <div className="text-[#E2E8F0]">·</div>
@@ -166,7 +166,7 @@ const AgendaSection: React.FC = () => {
                         <select
                             value={duration}
                             onChange={e => setDuration(e.target.value)}
-                            className="appearance-none pl-2.5 pr-7 py-1 border border-[#E2E8F0] bg-white rounded-lg text-[11px] font-bold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB] hover:border-[#94A3B8] transition-all cursor-pointer"
+                            className="appearance-none pl-2.5 pr-7 py-1 border border-[#E2E8F0] bg-white rounded-lg text-[11px] font-bold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#1D3461] hover:border-[#94A3B8] transition-all cursor-pointer"
                         >
                             {DURATIONS.map(d => <option key={d}>{d}</option>)}
                         </select>
@@ -189,7 +189,7 @@ const AgendaSection: React.FC = () => {
                                     </span>
                                     <button
                                         onClick={() => toggleDay(day)}
-                                        className={`relative w-10 h-5 rounded-full transition-all duration-200 ${cfg.enabled ? 'bg-[#2563EB]' : 'bg-[#E2E8F0]'}`}
+                                        className={`relative w-10 h-5 rounded-full transition-all duration-200 ${cfg.enabled ? 'bg-[#1D3461]' : 'bg-[#E2E8F0]'}`}
                                         aria-label={`Toggle ${day}`}
                                     >
                                         <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${cfg.enabled ? 'left-5' : 'left-0.5'}`} />
@@ -214,7 +214,7 @@ const AgendaSection: React.FC = () => {
                                             )}
                                             <button
                                                 onClick={() => addSlot(day)}
-                                                className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563EB] hover:text-[#1D4ED8] mt-1 w-fit transition-colors"
+                                                className="flex items-center gap-1.5 text-[11px] font-bold text-[#1D3461] hover:text-[#162749] mt-1 w-fit transition-colors"
                                             >
                                                 <Plus className="w-3.5 h-3.5" />
                                                 Adicionar período
@@ -252,7 +252,7 @@ const ManagementDashboard: React.FC = () => {
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-[12px] font-bold text-[#0F172A] flex items-center">
-                        <BarChart2 className="w-6 h-6 mr-3 text-[#2563EB]" />
+                        <BarChart2 className="w-6 h-6 mr-3 text-[#1D3461]" />
                         Gestão de Atendimentos & Performance
                     </h1>
                     <p className="text-[#64748B] text-[12px] font-medium mt-1">
@@ -264,15 +264,15 @@ const ManagementDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {/* KPI 1 */}
                     <div className="bg-white p-4 rounded-[10px] border border-[#E2E8F0] shadow-sm flex items-center relative overflow-hidden group">
-                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EFF6FF] rounded-full group-hover:scale-110 transition-transform"></div>
-                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
+                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EEF4FA] rounded-full group-hover:scale-110 transition-transform"></div>
+                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#1D3461] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
                             <Users className="w-5 h-5" />
                         </div>
                         <div className="flex-1 relative z-10">
                             <h3 className="text-[#64748B] text-[12px] font-bold capitalize mb-1 whitespace-nowrap">Total de Consultas</h3>
                             <div className="flex items-baseline gap-2">
                                 <p className="text-[#0F172A] text-[12px] font-black leading-none">1.248</p>
-                                <span className="text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center whitespace-nowrap">
+                                <span className="text-[#1D3461] bg-[#EEF4FA] border border-[#A8C4DA] px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center whitespace-nowrap">
                                     <TrendingUp className="w-3 h-3 mr-1" /> +12%
                                 </span>
                             </div>
@@ -281,15 +281,15 @@ const ManagementDashboard: React.FC = () => {
 
                     {/* KPI 2 */}
                     <div className="bg-white p-4 rounded-[10px] border border-[#E2E8F0] shadow-sm flex items-center relative overflow-hidden group">
-                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EFF6FF] rounded-full group-hover:scale-110 transition-transform"></div>
-                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
+                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EEF4FA] rounded-full group-hover:scale-110 transition-transform"></div>
+                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#1D3461] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
                             <MessageSquare className="w-5 h-5" />
                         </div>
                         <div className="flex-1 relative z-10">
                             <h3 className="text-[#64748B] text-[12px] font-bold capitalize mb-1 whitespace-nowrap">Iterações WhatsApp</h3>
                             <div className="flex items-baseline gap-2">
                                 <p className="text-[#0F172A] text-[12px] font-black leading-none">3.492</p>
-                                <span className="text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center whitespace-nowrap">
+                                <span className="text-[#1D3461] bg-[#EEF4FA] border border-[#A8C4DA] px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center whitespace-nowrap">
                                     <TrendingUp className="w-3 h-3 mr-1" /> +24%
                                 </span>
                             </div>
@@ -298,8 +298,8 @@ const ManagementDashboard: React.FC = () => {
 
                     {/* KPI 3 */}
                     <div className="bg-white p-4 rounded-[10px] border border-[#E2E8F0] shadow-sm flex items-center relative overflow-hidden group">
-                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EFF6FF] rounded-full group-hover:scale-110 transition-transform"></div>
-                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
+                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EEF4FA] rounded-full group-hover:scale-110 transition-transform"></div>
+                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#1D3461] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
                             <Clock className="w-5 h-5" />
                         </div>
                         <div className="flex-1 relative z-10">
@@ -315,8 +315,8 @@ const ManagementDashboard: React.FC = () => {
 
                     {/* KPI 4 */}
                     <div className="bg-white p-4 rounded-[10px] border border-[#E2E8F0] shadow-sm flex items-center relative overflow-hidden group">
-                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EFF6FF] rounded-full group-hover:scale-110 transition-transform"></div>
-                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
+                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#EEF4FA] rounded-full group-hover:scale-110 transition-transform"></div>
+                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#1D3461] text-white flex items-center justify-center shadow-md mr-4 relative z-10">
                             <Calendar className="w-5 h-5" />
                         </div>
                         <div className="flex-1 relative z-10">
@@ -342,7 +342,7 @@ const ManagementDashboard: React.FC = () => {
                     {/* Gráfico de Resolutividade */}
                     <div className="bg-white rounded-[12px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#E2E8F0] p-6 lg:p-8">
                         <h2 className="text-[12px] font-bold text-[#0F172A] mb-1 flex items-center">
-                            <CheckCircle className="w-5 h-5 mr-2 text-[#2563EB]" />
+                            <CheckCircle className="w-5 h-5 mr-2 text-[#1D3461]" />
                             Resolubilidade (Baseado em Feedbacks)
                         </h2>
                         <p className="text-[#94A3B8] text-[11px] font-medium mb-8">Percentual de casos resolvidos no primeiro atendimento x retornos.</p>
@@ -351,10 +351,10 @@ const ManagementDashboard: React.FC = () => {
                             <div>
                                 <div className="flex justify-between text-[12px] font-bold mb-2">
                                     <span className="text-[#475569]">Resolvidos Online (Sem Retorno)</span>
-                                    <span className="text-[#2563EB]">72%</span>
+                                    <span className="text-[#1D3461]">72%</span>
                                 </div>
                                 <div className="w-full bg-[#E2E8F0] rounded-full h-1.5 overflow-hidden">
-                                    <div className="bg-[#2563EB] h-1.5 rounded-full transition-all" style={{ width: '72%' }}></div>
+                                    <div className="bg-[#1D3461] h-1.5 rounded-full transition-all" style={{ width: '72%' }}></div>
                                 </div>
                             </div>
 
@@ -381,14 +381,14 @@ const ManagementDashboard: React.FC = () => {
 
                         <div className="mt-8 pt-6 border-t border-[#E2E8F0] flex items-center justify-between">
                             <span className="text-[12px] font-bold text-[#64748B]">Taxa Geral de Sucesso</span>
-                            <span className="px-3 py-1 bg-[#EFF6FF] text-[#2563EB] text-[11px] font-black rounded-lg border border-[#BFDBFE]">Elevada</span>
+                            <span className="px-3 py-1 bg-[#EEF4FA] text-[#1D3461] text-[11px] font-black rounded-lg border border-[#A8C4DA]">Elevada</span>
                         </div>
                     </div>
 
                     {/* Funil de Engajamento via WhatsApp */}
                     <div className="bg-white rounded-[12px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#E2E8F0] p-6 lg:p-8 flex flex-col">
                         <h2 className="text-[12px] font-bold text-[#0F172A] mb-1 flex items-center">
-                            <MessageSquare className="w-5 h-5 mr-2 text-[#2563EB]" />
+                            <MessageSquare className="w-5 h-5 mr-2 text-[#1D3461]" />
                             Funil de Engajamento via WhatsApp
                         </h2>
                         <p className="text-[#94A3B8] text-[11px] font-medium mb-6">Conversão de mensagens automáticas que geraram respostas ou feedbacks do paciente.</p>
@@ -421,7 +421,7 @@ const ManagementDashboard: React.FC = () => {
                                         <td className="table-text text-[11px] text-[#475569] whitespace-nowrap">Taxa de abertura</td>
                                         <td className="table-text text-[11px] font-bold text-[#0F172A] text-right whitespace-nowrap">1.350</td>
                                         <td className="table-text text-right whitespace-nowrap">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EFF6FF] text-[#2563EB]">90%</span>
+                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EEF4FA] text-[#1D3461]">90%</span>
                                         </td>
                                     </tr>
                                     <tr className="table-row-hover">
@@ -431,7 +431,7 @@ const ManagementDashboard: React.FC = () => {
                                         <td className="table-text text-[11px] text-[#475569] whitespace-nowrap">Interação ativa via BOT</td>
                                         <td className="table-text text-[11px] font-bold text-[#0F172A] text-right whitespace-nowrap">480</td>
                                         <td className="table-text text-right whitespace-nowrap">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EFF6FF] text-[#2563EB]">35%</span>
+                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EEF4FA] text-[#1D3461]">35%</span>
                                         </td>
                                     </tr>
                                 </tbody>

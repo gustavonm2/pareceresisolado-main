@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-    User, Phone, Mail, Calendar, FileText, Pill, FlaskConical,
-    Video, CheckCircle, Clock, AlertCircle,
-    ClipboardList, Stethoscope, Shield, Bell
+    User, Phone, Mail, Calendar,
+    CheckCircle, Clock, AlertCircle, Shield,
+    Bell, PlusCircle, Star
 } from 'lucide-react';
 import VideoCallOverlay from './VideoCallOverlay';
+import NovaConsultaModal from './NovaConsultaModal';
+import RatingModal from './RatingModal';
 import {
-    getOpinioes, markOpiniaoAsRead,
+    getOpinioes, markOpiniaoAsRead, seedMockRatings,
     type StoredOpinion
 } from '../utils/patientStore';
 
@@ -66,17 +68,6 @@ const MOCK_HISTORY = [
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-const SectionCard: React.FC<{ title: string; icon: React.ElementType; children: React.ReactNode; accent?: string; id?: string }> = ({
-    title, icon: Icon, children, accent = '#2563EB', id
-}) => (
-    <div id={id} className="bg-white rounded-[12px] shadow-sm border border-[#E2E8F0] overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center" style={{ borderLeftWidth: 3, borderLeftColor: accent, borderLeftStyle: 'solid' }}>
-            <Icon className="w-4 h-4 mr-2.5" style={{ color: accent }} />
-            <h2 className="text-[12px] font-bold text-[#0F172A] tracking-wide uppercase">{title}</h2>
-        </div>
-        <div className="p-6">{children}</div>
-    </div>
-);
 
 // Table helper
 const Th: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -108,11 +99,27 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
 const PatientPortal: React.FC = () => {
     const [showVideoCall, setShowVideoCall] = useState(false);
+    const [showNovaConsulta, setShowNovaConsulta] = useState(false);
+    const [showRating, setShowRating] = useState(false);
+    const [ratingDoctor, setRatingDoctor] = useState<{ name: string; specialty: string; consultaId: string } | null>(null);
     const [storedOpinioes, setStoredOpinioes] = useState<StoredOpinion[]>([]);
     const [activeTab, setActiveTab] = useState<string | null>(null);
 
     useEffect(() => {
         setStoredOpinioes(getOpinioes());
+        seedMockRatings();
+    }, []);
+
+    // Listen for tab selection dispatched by the sidebar
+    useEffect(() => {
+        const handler = (e: Event) => {
+            const tab = (e as CustomEvent<string>).detail;
+            setActiveTab(tab);
+            // Sync sidebar highlight back
+            window.dispatchEvent(new CustomEvent('patient-section-change', { detail: tab }));
+        };
+        window.addEventListener('patient-tab-select', handler);
+        return () => window.removeEventListener('patient-tab-select', handler);
     }, []);
 
     const handleMarkRead = (id: string) => {
@@ -135,7 +142,7 @@ const PatientPortal: React.FC = () => {
                 <div className="bg-white rounded-[14px] shadow-sm border border-[#E2E8F0] p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
-                        <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center font-bold text-[26px] shadow-md">
+                        <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#1D3461] to-[#162749] text-white flex items-center justify-center font-bold text-[26px] shadow-md">
                             {MOCK_PATIENT_INFO.initials}
                         </div>
                         <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-[#10B981] border-2 border-white" />
@@ -154,51 +161,27 @@ const PatientPortal: React.FC = () => {
                             <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {MOCK_PATIENT_INFO.email}</span>
                         </div>
                         <div className="flex gap-2 mt-3">
-                            <span className="bg-[#EFF6FF] text-[#2563EB] text-[11px] font-bold px-2.5 py-1 rounded-lg">Tipo sanguíneo: {MOCK_PATIENT_INFO.bloodType}</span>
+                            <span className="bg-[#EEF4FA] text-[#1D3461] text-[11px] font-bold px-2.5 py-1 rounded-lg">Tipo sanguíneo: {MOCK_PATIENT_INFO.bloodType}</span>
                             <span className="bg-[#F1F5F9] text-[#475569] text-[11px] font-bold px-2.5 py-1 rounded-lg">{MOCK_PATIENT_INFO.city}</span>
                         </div>
                     </div>
 
+                    {/* Nova Consulta CTA */}
+                    <div className="flex-shrink-0 self-center sm:self-auto">
+                        <button
+                            onClick={() => setShowNovaConsulta(true)}
+                            className="relative flex items-center gap-2.5 px-6 py-3.5 rounded-2xl text-white font-bold text-[14px] transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                            style={{ background: 'linear-gradient(135deg, #1D3461 0%, #7C3AED 100%)' }}
+                        >
+                            {/* Pulse ring */}
+                            <span className="absolute inset-0 rounded-2xl animate-ping opacity-20" style={{ background: 'linear-gradient(135deg, #1D3461 0%, #7C3AED 100%)' }} />
+                            <PlusCircle className="w-5 h-5" />
+                            Nova Consulta
+                        </button>
+                    </div>
+
                 </div>
-                {/* ── Section Buttons Grid ── */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
-                    {([
-                        { id: 'prontuario',   label: 'Prontuário',       icon: ClipboardList, accent: '#2563EB',  bg: '#EFF6FF',  count: MOCK_HISTORY.length, badge: 0 },
-                        { id: 'medicacoes',  label: 'Medicações',       icon: Pill,          accent: '#6366F1',  bg: '#EEF2FF',  count: 3, badge: 0 },
-                        { id: 'historico',   label: 'Hist. Saúde',       icon: Shield,        accent: '#F59E0B',  bg: '#FEF3C7',  count: 4, badge: 0 },
-                        { id: 'pareceres',   label: 'Pareceres',          icon: FileText,      accent: '#10B981',  bg: '#ECFDF5',  count: allOpinioes.length, badge: hasNew ? storedOpinioes.filter(o => o.isNew).length : 0 },
-                        { id: 'prescricoes', label: 'Prescrições',       icon: Stethoscope,   accent: '#8B5CF6',  bg: '#F5F3FF',  count: MOCK_PRESCRIPTIONS.flatMap(r => r.meds).length, badge: 0 },
-                        { id: 'exames',      label: 'Exames',             icon: FlaskConical,  accent: '#0EA5E9',  bg: '#F0F9FF',  count: MOCK_EXAMS.length, badge: MOCK_EXAMS.filter(e => e.status === 'Pendente').length },
-                    ]).map(({ id, label, icon: Icon, accent, bg, count, badge }) => {
-                        const isActive = activeTab === id;
-                        return (
-                            <button
-                                key={id}
-                                onClick={() => setActiveTab(isActive ? null : id)}
-                                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-[12px] border-2 transition-all group ${
-                                    isActive
-                                        ? 'border-current shadow-md scale-[1.02]'
-                                        : 'border-[#E2E8F0] bg-white hover:border-current hover:scale-[1.01] hover:shadow-sm'
-                                }`}
-                                style={isActive ? { backgroundColor: bg, borderColor: accent } : {}}
-                            >
-                                <div className="relative">
-                                    <div
-                                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
-                                        style={{ backgroundColor: isActive ? accent : bg }}
-                                    >
-                                        <Icon className="w-5 h-5" style={{ color: isActive ? 'white' : accent }} />
-                                    </div>
-                                    {(badge !== undefined && badge > 0) && (
-                                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#EF4444] text-white text-[9px] font-black rounded-full flex items-center justify-center">{badge}</span>
-                                    )}
-                                </div>
-                                <p className="text-[11px] font-bold leading-tight text-center" style={{ color: isActive ? accent : '#475569' }}>{label}</p>
-                                <p className="text-[18px] font-black leading-none" style={{ color: isActive ? accent : '#0F172A' }}>{count}</p>
-                            </button>
-                        );
-                    })}
-                </div>
+
 
                 {/* ── Active Tab Panel ── */}
                 {activeTab && (
@@ -207,7 +190,7 @@ const PatientPortal: React.FC = () => {
                         {/* Panel header */}
                         <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between"
                             style={{ borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: {
-                                prontuario: '#2563EB', medicacoes: '#6366F1', historico: '#F59E0B',
+                                prontuario: '#1D3461', medicacoes: '#6366F1', historico: '#F59E0B',
                                 pareceres: '#10B981', prescricoes: '#8B5CF6', exames: '#0EA5E9'
                             }[activeTab] }}
                         >
@@ -219,11 +202,6 @@ const PatientPortal: React.FC = () => {
                                 prescricoes:  'Prescrições',
                                 exames:       'Solicitação de Exames',
                             }[activeTab]}</h2>
-                            <button
-                                onClick={() => setActiveTab(null)}
-                                className="text-[#94A3B8] hover:text-[#475569] text-[18px] leading-none font-bold px-1 transition-colors"
-                                aria-label="Fechar"
-                            >×</button>
                         </div>
 
                         {/* Panel body */}
@@ -234,18 +212,28 @@ const PatientPortal: React.FC = () => {
                                 {activeTab === 'prontuario' && (
                                     <table className="w-full">
                                         <thead><tr>
-                                            <Th>Data</Th><Th>Especialidade</Th><Th>Médico</Th><Th>Queixa Principal</Th>
+                                            <Th>Data</Th><Th>Especialidade</Th><Th>Médico</Th><Th>Queixa Principal</Th><Th>Avaliar</Th>
                                         </tr></thead>
                                         <tbody>{MOCK_HISTORY.map(item => (
                                             <tr key={item.id} className="hover:bg-[#F8FAFC]">
                                                 <Td className="whitespace-nowrap text-[#64748B] font-medium">{item.date}</Td>
-                                                <Td className="whitespace-nowrap"><span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EFF6FF] text-[#2563EB]">{item.specialty}</span></Td>
+                                                <Td className="whitespace-nowrap"><span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EEF4FA] text-[#1D3461]">{item.specialty}</span></Td>
                                                 <Td className="whitespace-nowrap font-medium text-[#334155]">{item.doctor}</Td>
                                                 <Td className="text-[#475569] font-medium">{item.complaint}</Td>
+                                                <Td>
+                                                    <button
+                                                        onClick={() => { setRatingDoctor({ name: item.doctor, specialty: item.specialty, consultaId: item.id }); setShowRating(true); }}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#FEF3C7] text-[#92400E] hover:bg-[#FDE68A] transition-colors whitespace-nowrap"
+                                                    >
+                                                        <Star className="w-3 h-3" fill="#F59E0B" stroke="#F59E0B" />
+                                                        Avaliar
+                                                    </button>
+                                                </Td>
                                             </tr>
                                         ))}</tbody>
                                     </table>
                                 )}
+
 
                                 {/* Medicações */}
                                 {activeTab === 'medicacoes' && (
@@ -366,6 +354,23 @@ const PatientPortal: React.FC = () => {
                 <VideoCallOverlay
                     patientName={MOCK_PATIENT_INFO.name}
                     onClose={() => setShowVideoCall(false)}
+                />
+            )}
+
+            {/* Nova Consulta Modal */}
+            {showNovaConsulta && (
+                <NovaConsultaModal onClose={() => setShowNovaConsulta(false)} />
+            )}
+
+            {/* Rating Modal */}
+            {showRating && ratingDoctor && (
+                <RatingModal
+                    doctorName={ratingDoctor.name}
+                    doctorSpecialty={ratingDoctor.specialty}
+                    team="Clínica SCI"
+                    consultaId={ratingDoctor.consultaId}
+                    patientName={MOCK_PATIENT_INFO.name}
+                    onClose={() => { setShowRating(false); setRatingDoctor(null); }}
                 />
             )}
         </div>

@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { QueueItem, ChatMessage } from '../types';
 import { getMockPatientDetails, addPatientHistoryItem } from '../utils/patientData';
 import { updateOpinionStatus } from '../utils/opinionsData';
-import { addOpiniao } from '../utils/patientStore';
+import { addOpiniao, addRepasse } from '../utils/patientStore';
 import { getGeminiChatResponse, resetChat } from '../services/gemini';
-import { ArrowLeft, Send, Bot, Loader2, CheckCircle, BookOpen, FileText } from 'lucide-react';
+import { ArrowLeft, Send, Bot, Loader2, CheckCircle, BookOpen, FileText, ArrowRightLeft } from 'lucide-react';
 import PrescriptionVisualizer from './PrescriptionVisualizer';
+import RepasseModal from './RepasseModal';
 
 interface ClinicalAttendanceProps {
   patient: QueueItem;
@@ -40,6 +41,7 @@ const ClinicalAttendance: React.FC<ClinicalAttendanceProps> = ({ patient, onBack
   });
 
   const [showPrescription, setShowPrescription] = useState(false);
+  const [showRepasseModal, setShowRepasseModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitialized = useRef(false);
@@ -194,6 +196,22 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
     }
   };
 
+  const handleRepasse = (motivo: string) => {
+    addRepasse({
+      patientId: patient.id,
+      patientName: detailedPatient.patientName,
+      especialidade: detailedPatient.type || 'Especialidade',
+      hipotese: detailedPatient.requestDescription || '',
+      priority: 'Média',
+      queixaDetalhada: detailedPatient.requestDescription || '',
+      motivoRepasse: motivo,
+      repassadoPor: detailedPatient.requesterName || 'Parecerista',
+      historicoRepasses: [],
+    });
+    setShowRepasseModal(false);
+    onBack();
+  };
+
   // --- ACTIONS FOR REVIEW SCREEN ---
 
   const handleGoToReview = () => {
@@ -264,6 +282,13 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
             >
               <FileText className="w-4 h-4 mr-2" />
               Ver Receituário
+            </button>
+            <button
+              onClick={() => setShowRepasseModal(true)}
+              className="flex items-center justify-center px-4 py-2 bg-orange-50 border border-orange-300 text-orange-700 hover:bg-orange-100 rounded-lg font-medium shadow-sm transition-colors"
+            >
+              <ArrowRightLeft className="w-4 h-4 mr-2" />
+              Repassar Caso
             </button>
             <button
               onClick={handleFinalize}
@@ -452,6 +477,16 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
           </div>
         )}
       </div>
+
+      {/* Repasse Modal */}
+      {showRepasseModal && (
+        <RepasseModal
+          patientName={detailedPatient.patientName}
+          especialidade={detailedPatient.type || 'Especialidade'}
+          onConfirm={handleRepasse}
+          onCancel={() => setShowRepasseModal(false)}
+        />
+      )}
     </div>
   );
 };

@@ -62,7 +62,7 @@ const ProfileManagement: React.FC = () => {
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-[12px] font-bold text-[#0F172A] flex items-center">
-                            <Shield className="w-6 h-6 mr-3 text-[#2563EB]" />
+                            <Shield className="w-6 h-6 mr-3 text-[#1D3461]" />
                             Gestão de Perfis & Acessos
                         </h1>
                         <p className="text-[#64748B] text-[11px] font-medium mt-1">
@@ -82,13 +82,13 @@ const ProfileManagement: React.FC = () => {
                 <div className="flex gap-4 mb-6 border-b border-[#E2E8F0]">
                     <button
                         onClick={() => setActiveTab('system')}
-                        className={`pb-3 px-2 text-[12px] font-bold transition-colors border-b-2 ${activeTab === 'system' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] hover:text-[#0F172A]'}`}
+                        className={`pb-3 px-2 text-[12px] font-bold transition-colors border-b-2 ${activeTab === 'system' ? 'border-[#1D3461] text-[#1D3461]' : 'border-transparent text-[#64748B] hover:text-[#0F172A]'}`}
                     >
                         Usuários do Sistema (Profissionais)
                     </button>
                     <button
                         onClick={() => setActiveTab('patients')}
-                        className={`pb-3 px-2 text-[12px] font-bold transition-colors border-b-2 ${activeTab === 'patients' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] hover:text-[#0F172A]'}`}
+                        className={`pb-3 px-2 text-[12px] font-bold transition-colors border-b-2 ${activeTab === 'patients' ? 'border-[#1D3461] text-[#1D3461]' : 'border-transparent text-[#64748B] hover:text-[#0F172A]'}`}
                     >
                         Gerenciar Pacientes
                     </button>
@@ -104,19 +104,19 @@ const ProfileManagement: React.FC = () => {
                                 placeholder="Buscar por nome ou e-mail..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
+                                className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#1D3461] focus:border-transparent transition-all"
                             />
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto">
                             {activeTab === 'system' ? (
-                                <select className="bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569] text-[11px] font-medium rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#2563EB]">
+                                <select className="bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569] text-[11px] font-medium rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#1D3461]">
                                     <option value="all">Todos os Papéis</option>
                                     <option value="Master">Gestor Master</option>
                                     <option value="Especialista">Especialistas</option>
                                     <option value="Triador">Triadores / Solicitantes</option>
                                 </select>
                             ) : (
-                                <select className="bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569] text-[11px] font-medium rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#2563EB]">
+                                <select className="bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569] text-[11px] font-medium rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#1D3461]">
                                     <option value="all">Todos os Status</option>
                                     <option value="ativo">Ativos</option>
                                     <option value="inativo">Inativos</option>
@@ -159,16 +159,16 @@ const ProfileManagement: React.FC = () => {
                                             <td className="table-text whitespace-nowrap">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold capitalize ${user.status === 'Ativo'
                                                     ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]'
-                                                    : 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]'
+                                                    : 'bg-[#FEF2F2] text-[#C0392B] border border-[#FECACA]'
                                                     }`}>
                                                     {user.status}
                                                 </span>
                                             </td>
                                             <td className="table-text whitespace-nowrap text-right">
-                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] rounded-lg transition-colors mr-1">
+                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#1D3461] hover:bg-[#EEF4FA] rounded-lg transition-colors mr-1">
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
-                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-lg transition-colors">
+                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#C0392B] hover:bg-[#FEF2F2] rounded-lg transition-colors">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </td>
@@ -206,16 +206,16 @@ const ProfileManagement: React.FC = () => {
                                             <td className="table-text whitespace-nowrap">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold capitalize ${patient.status === 'Ativo'
                                                     ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]'
-                                                    : 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]'
+                                                    : 'bg-[#FEF2F2] text-[#C0392B] border border-[#FECACA]'
                                                     }`}>
                                                     {patient.status}
                                                 </span>
                                             </td>
                                             <td className="table-text whitespace-nowrap text-right">
-                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] rounded-lg transition-colors mr-1">
+                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#1D3461] hover:bg-[#EEF4FA] rounded-lg transition-colors mr-1">
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
-                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-lg transition-colors">
+                                                <button className="w-8 h-8 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#C0392B] hover:bg-[#FEF2F2] rounded-lg transition-colors">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </td>
@@ -244,7 +244,7 @@ const ProfileManagement: React.FC = () => {
                         <div className="bg-white rounded-[12px] shadow-[0_16px_40px_rgba(0,0,0,0.1)] max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
                             <div className="px-6 py-5 border-b border-[#E2E8F0] flex justify-between items-center bg-white sticky top-0 z-10">
                                 <h3 className="font-bold text-[12px] text-[#0F172A] flex items-center">
-                                    <Users className="w-5 h-5 mr-2 text-[#2563EB]" />
+                                    <Users className="w-5 h-5 mr-2 text-[#1D3461]" />
                                     Adicionar Novo Usuário
                                 </h3>
                                 <button onClick={() => setIsModalOpen(false)} className="p-2 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-full transition-colors">
@@ -256,15 +256,15 @@ const ProfileManagement: React.FC = () => {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-[11px] font-bold text-[#475569] mb-1.5 capitalize">Nome Completo</label>
-                                        <input type="text" className="w-full px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all" placeholder="Ex: Dr. João Silva" />
+                                        <input type="text" className="w-full px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#1D3461] focus:border-transparent transition-all" placeholder="Ex: Dr. João Silva" />
                                     </div>
                                     <div>
                                         <label className="block text-[11px] font-bold text-[#475569] mb-1.5 capitalize">E-mail Profissional</label>
-                                        <input type="email" className="w-full px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all" placeholder="joao.silva@clinica.com" />
+                                        <input type="email" className="w-full px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-[#1D3461] focus:border-transparent transition-all" placeholder="joao.silva@clinica.com" />
                                     </div>
                                     <div>
                                         <label className="block text-[11px] font-bold text-[#475569] mb-1.5 capitalize">Papel do Usuário no Sistema</label>
-                                        <select className="w-full px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all">
+                                        <select className="w-full px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[11px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#1D3461] transition-all">
                                             <option value="">Selecione um papel estrutural...</option>
                                             <option value="Triador_Medico">Triador / Solicitante (Médico)</option>
                                             <option value="Triador_Enfermeiro">Triador / Solicitante (Enfermeiro)</option>

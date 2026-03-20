@@ -79,12 +79,12 @@ const PacientesList: React.FC = () => {
                             <input
                                 type="text"
                                 placeholder="Buscar por nome ou CPF..."
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm text-[11px]"
+                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#1D3461] focus:border-transparent transition-all shadow-sm text-[11px]"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button className="flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm w-full sm:w-auto justify-center">
+                        <button className="flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-[#1D3461] transition-all shadow-sm w-full sm:w-auto justify-center">
                             <Filter className="w-4 h-4" />
                             Filtros
                         </button>
@@ -107,7 +107,7 @@ const PacientesList: React.FC = () => {
                                     return (
                                         <tr key={patient.id} className="hover:bg-slate-50/80 transition-colors group">
                                             <td className="py-4 px-6">
-                                                <div className="font-bold text-slate-800 text-[11px] group-hover:text-blue-600 transition-colors">{patient.name}</div>
+                                                <div className="font-bold text-slate-800 text-[11px] group-hover:text-[#1D3461] transition-colors">{patient.name}</div>
                                                 <div className="text-[11px] text-slate-500 font-medium mt-0.5">{patient.cpf} • {patient.age} anos</div>
                                             </td>
                                             <td className="py-4 px-6 max-w-[250px]">
@@ -139,7 +139,7 @@ const PacientesList: React.FC = () => {
                                                 <button
                                                     onClick={() => !isEncaminhado && navigate(`/triagem/${patient.id}`)}
                                                     disabled={isEncaminhado}
-                                                    className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm ${isEncaminhado ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white'}`}
+                                                    className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm ${isEncaminhado ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-[#EEF4FA] text-[#1D3461] hover:bg-[#1D3461] hover:text-white'}`}
                                                     title={isEncaminhado ? 'Já encaminhado' : 'Iniciar triagem'}
                                                 >
                                                     <ChevronRight className="w-5 h-5" />

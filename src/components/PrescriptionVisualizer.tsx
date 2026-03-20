@@ -25,7 +25,7 @@ const PrescriptionVisualizer: React.FC<PrescriptionVisualizerProps> = ({
                 {/* Toolbar */}
                 <div className="bg-white px-6 py-4 flex items-center justify-between border-b border-[#E2E8F0]">
                     <h3 className="font-bold text-[18px] text-[#0F172A] flex items-center">
-                        <Pill className="w-5 h-5 mr-2 text-[#2563EB]" />
+                        <Pill className="w-5 h-5 mr-2 text-[#1D3461]" />
                         Visualização de Receituário
                     </h3>
                     <div className="flex items-center gap-3">
@@ -54,7 +54,7 @@ const PrescriptionVisualizer: React.FC<PrescriptionVisualizerProps> = ({
                         {/* Paper Header / Timbrado */}
                         <div className="px-12 pt-16 pb-8 border-b-2 border-[#E2E8F0] flex justify-between items-center bg-white rounded-t-md relative z-10">
                             <div className="flex items-center">
-                                <div className="w-12 h-12 bg-[#2563EB] rounded-lg flex items-center justify-center text-white mr-4 shadow-sm">
+                                <div className="w-12 h-12 bg-[#1D3461] rounded-lg flex items-center justify-center text-white mr-4 shadow-sm">
                                     <span className="font-black text-xl tracking-tighter">P</span>
                                 </div>
                                 <div>
@@ -78,7 +78,7 @@ const PrescriptionVisualizer: React.FC<PrescriptionVisualizerProps> = ({
                             <div className="mb-8">
                                 <div className="flex items-center mb-4">
                                     <div className="bg-[#EBF3FF] p-2 rounded-lg mr-3">
-                                        <Pill className="w-5 h-5 text-[#2563EB]" />
+                                        <Pill className="w-5 h-5 text-[#1D3461]" />
                                     </div>
                                     <h3 className="text-[16px] font-bold capitalize text-[#0F172A]">Prescrição de Medicamentos</h3>
                                 </div>
@@ -96,7 +96,7 @@ const PrescriptionVisualizer: React.FC<PrescriptionVisualizerProps> = ({
                             <div>
                                 <div className="flex items-center mb-4">
                                     <div className="bg-[#EBF3FF] p-2 rounded-lg mr-3">
-                                        <ShieldCheck className="w-5 h-5 text-[#2563EB]" />
+                                        <ShieldCheck className="w-5 h-5 text-[#1D3461]" />
                                     </div>
                                     <h3 className="text-[16px] font-bold capitalize text-[#0F172A]">Orientações Gerais</h3>
                                 </div>
@@ -124,7 +124,7 @@ const PrescriptionVisualizer: React.FC<PrescriptionVisualizerProps> = ({
 
                         {/* Validation Stamp watermark */}
                         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-[0.03] z-0 pointer-events-none">
-                            <ShieldCheck className="w-96 h-96 text-[#2563EB]" />
+                            <ShieldCheck className="w-96 h-96 text-[#1D3461]" />
                         </div>
                     </div>
                 </div>

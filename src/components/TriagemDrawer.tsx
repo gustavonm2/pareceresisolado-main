@@ -30,12 +30,12 @@ const ESPECIALIDADES = [
 
 const Label: React.FC<{ children: React.ReactNode; required?: boolean }> = ({ children, required }) => (
     <label className="block text-[11px] font-bold text-[#334155] mb-1.5">
-        {children} {required && <span className="text-[#EF4444]">*</span>}
+        {children} {required && <span className="text-[#C0392B]">*</span>}
     </label>
 );
 
 const inputCls = (err?: boolean) =>
-    `w-full px-3 py-2 text-[11px] font-medium text-[#0F172A] border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all ${err ? 'border-[#EF4444]' : 'border-[#CBD5E1]'}`;
+    `w-full px-3 py-2 text-[11px] font-medium text-[#0F172A] border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3461] transition-all ${err ? 'border-[#C0392B]' : 'border-[#CBD5E1]'}`;
 
 const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmit }) => {
     const [priority, setPriority] = useState<'Alta' | 'Média' | 'Baixa'>(patient.priority);
@@ -110,7 +110,7 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                 {/* Header */}
                 <div className="bg-white border-b border-[#E2E8F0] px-6 py-5 flex items-start justify-between flex-shrink-0">
                     <div>
-                        <p className="text-[10px] font-bold text-[#2563EB] uppercase tracking-widest mb-1">Triagem</p>
+                        <p className="text-[10px] font-bold text-[#1D3461] uppercase tracking-widest mb-1">Triagem</p>
                         <h2 className="text-[14px] font-black text-[#0F172A] leading-tight">{patient.name}</h2>
                         <p className="text-[11px] font-medium text-[#64748B] mt-0.5">{patient.cpf} · {patient.age} anos</p>
                     </div>
@@ -174,7 +174,7 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                                     {(['Alta', 'Média', 'Baixa'] as const).map(p => {
                                         const isActive = priority === p;
                                         const activeStyles: Record<string, { bg: string; text: string; border: string }> = {
-                                            Alta:  { bg: '#FEE2E2', text: '#DC2626', border: '#FCA5A5' },
+                                            Alta:  { bg: '#FEE2E2', text: '#C0392B', border: '#FCA5A5' },
                                             Média: { bg: '#FEF3C7', text: '#D97706', border: '#FCD34D' },
                                             Baixa: { bg: '#ECFDF5', text: '#059669', border: '#6EE7B7' },
                                         };
@@ -259,7 +259,7 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                                     value={queixaDetalhada}
                                     onChange={e => { setQueixaDetalhada(e.target.value); if (errors.queixaDetalhada) setErrors(p => ({ ...p, queixaDetalhada: false })); }}
                                 />
-                                {errors.queixaDetalhada && <p className="text-[10px] text-[#EF4444] font-medium mt-1">Campo obrigatório</p>}
+                                {errors.queixaDetalhada && <p className="text-[10px] text-[#C0392B] font-medium mt-1">Campo obrigatório</p>}
                             </div>
 
                             {/* Hipótese diagnóstica */}
@@ -272,7 +272,7 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                                     value={hipotese}
                                     onChange={e => { setHipotese(e.target.value); if (errors.hipotese) setErrors(p => ({ ...p, hipotese: false })); }}
                                 />
-                                {errors.hipotese && <p className="text-[10px] text-[#EF4444] font-medium mt-1">Campo obrigatório</p>}
+                                {errors.hipotese && <p className="text-[10px] text-[#C0392B] font-medium mt-1">Campo obrigatório</p>}
                             </div>
 
                             {/* Modalidade */}
@@ -280,7 +280,7 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                                 <Label required>Modalidade de Atendimento</Label>
                                 <div className="relative">
                                     <select
-                                        className="w-full px-3 py-2.5 text-[11px] font-medium text-[#0F172A] border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] appearance-none bg-white transition-all cursor-pointer"
+                                        className="w-full px-3 py-2.5 text-[11px] font-medium text-[#0F172A] border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3461] appearance-none bg-white transition-all cursor-pointer"
                                         value={modalidade}
                                         onChange={e => setModalidade(e.target.value as 'online' | 'parecer')}
                                     >
@@ -314,7 +314,7 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                                     </select>
                                     <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
                                 </div>
-                                {errors.especialidade && <p className="text-[10px] text-[#EF4444] font-medium mt-1">Selecione uma especialidade</p>}
+                                {errors.especialidade && <p className="text-[10px] text-[#C0392B] font-medium mt-1">Selecione uma especialidade</p>}
                             </div>
 
                             {/* Observações */}
@@ -332,7 +332,7 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                             {/* Submit */}
                             <button
                                 type="submit"
-                                className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl font-bold text-[12px] shadow-[0_4px_12px_rgba(37,99,235,0.25)] transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+                                className="w-full py-3.5 bg-[#1D3461] hover:bg-[#162749] text-white rounded-xl font-bold text-[12px] shadow-[0_4px_12px_rgba(29,52,97,0.25)] transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
                             >
                                 <Send className="w-4 h-4" />
                                 Encaminhar para Parecer

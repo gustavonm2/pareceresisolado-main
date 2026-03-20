@@ -100,7 +100,7 @@ const Opinions: React.FC<OpinionsProps> = ({ onPatientSelect }) => {
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-[12px] font-bold text-[#0F172A] flex items-center">
-                            <Share2 className="w-6 h-6 mr-3 text-[#2563EB]" />
+                            <Share2 className="w-6 h-6 mr-3 text-[#1D3461]" />
                             {userRole === 'triador' ? 'Pareceres Solicitados' : 'Central de Pareceres'}
                         </h1>
                         <p className="text-[#64748B] text-[11px] font-medium mt-1">
@@ -124,14 +124,14 @@ const Opinions: React.FC<OpinionsProps> = ({ onPatientSelect }) => {
                             <div className="bg-white px-6 py-5 border-b border-[#E2E8F0] flex justify-between items-center">
                                 <div>
                                     <h2 className="text-[12px] font-bold text-[#0F172A] flex items-center">
-                                        <FileText className="w-5 h-5 mr-2 text-[#2563EB]" />
+                                        <FileText className="w-5 h-5 mr-2 text-[#1D3461]" />
                                         {userRole === 'triador' ? 'Novos Cadastros & Triagem' : 'Pareceres a Realizar (Recebidos)'}
                                     </h2>
                                     <p className="text-[11px] font-medium text-[#64748B] mt-1">
                                         {userRole === 'triador' ? 'Pacientes advindos do portal aguardando encaminhamento clínico.' : 'Solicitações encaminhadas para sua especialidade.'}
                                     </p>
                                 </div>
-                                <span className="bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center shadow-sm">
+                                <span className="bg-[#EEF4FA] border border-[#A8C4DA] text-[#1D3461] text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center shadow-sm">
                                     {incomingList.filter(i => i.status === 'Pendente').length} Pendentes
                                 </span>
                             </div>
@@ -157,7 +157,7 @@ const Opinions: React.FC<OpinionsProps> = ({ onPatientSelect }) => {
                                             >
                                                 <td className="table-text whitespace-nowrap">
                                                     <div className="flex items-center">
-                                                        <span className="text-[11px] font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{item.patientName}</span>
+                                                        <span className="text-[11px] font-bold text-[#0F172A] group-hover:text-[#1D3461] transition-colors">{item.patientName}</span>
                                                     </div>
                                                 </td>
                                                 <td className="table-text whitespace-nowrap text-[11px] text-[#475569]">
@@ -169,7 +169,7 @@ const Opinions: React.FC<OpinionsProps> = ({ onPatientSelect }) => {
                                                     </div>
                                                 </td>
                                                 <td className="table-text whitespace-nowrap">
-                                                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold capitalize ${item.priority === 'Urgente' ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]' : 'bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0]'}`}>
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold capitalize ${item.priority === 'Urgente' ? 'bg-[#FEF2F2] text-[#C0392B] border border-[#FECACA]' : 'bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0]'}`}>
                                                         {item.priority}
                                                     </span>
                                                 </td>
@@ -183,7 +183,7 @@ const Opinions: React.FC<OpinionsProps> = ({ onPatientSelect }) => {
                                                             Concluído
                                                         </span>
                                                     ) : (
-                                                        <button className="btn-primary hover:bg-[#1D4ED8] bg-[#2563EB] text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-[0_2px_8px_rgba(37,99,235,0.25)] transition-transform hover:-translate-y-0.5 ml-auto">
+                                                        <button className="btn-primary hover:bg-[#162749] bg-[#1D3461] text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-[0_2px_8px_rgba(29,52,97,0.25)] transition-transform hover:-translate-y-0.5 ml-auto">
                                                             {userRole === 'triador' ? 'Encaminhar' : 'Responder'}
                                                         </button>
                                                     )}
@@ -202,7 +202,7 @@ const Opinions: React.FC<OpinionsProps> = ({ onPatientSelect }) => {
                             <div className="bg-white px-6 py-5 border-b border-[#E2E8F0] flex justify-between items-center">
                                 <div>
                                     <h2 className="text-[12px] font-bold text-[#0F172A] flex items-center">
-                                        <Send className="w-5 h-5 mr-2 text-[#2563EB]" />
+                                        <Send className="w-5 h-5 mr-2 text-[#1D3461]" />
                                         Pareceres Solicitados (Enviados)
                                     </h2>
                                     <p className="text-[11px] font-medium text-[#64748B] mt-1">Histórico de interconsultas que você solicitou.</p>

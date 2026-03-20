@@ -189,3 +189,229 @@ export function clearPatientStore(): void {
     localStorage.removeItem(MODALIDADE_KEY);
     localStorage.removeItem(TRIAGENS_KEY);
 }
+
+// ── Suporte Técnico (Tickets / Chat) ─────────────────────────────────────────
+
+export interface TicketReply {
+    author: string;    // display name
+    authorRole: string;
+    text: string;
+    date: string;
+}
+
+export interface StoredTicket {
+    id: string;
+    tipo: 'chamado' | 'chat';
+    authorRole: string;   // e.g. 'triador', 'paciente'
+    authorName: string;
+    subject: string;
+    message: string;
+    status: 'aberto' | 'em_andamento' | 'resolvido';
+    replies: TicketReply[];
+    createdAt: string;  // dd/mm/yyyy hh:mm
+    hasUnreadReply: boolean; // unread for the original author
+}
+
+const TICKETS_KEY = 'pc_tickets';
+
+export function getTickets(): StoredTicket[] {
+    try {
+        const raw = localStorage.getItem(TICKETS_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+export function getTicketsByAuthor(authorName: string, authorRole: string): StoredTicket[] {
+    return getTickets().filter(t => t.authorName === authorName && t.authorRole === authorRole);
+}
+
+export function addTicket(
+    data: Pick<StoredTicket, 'tipo' | 'authorRole' | 'authorName' | 'subject' | 'message'>
+): StoredTicket {
+    const existing = getTickets();
+    const now = new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    });
+    const newTicket: StoredTicket = {
+        ...data,
+        id: `tkt_${Date.now()}`,
+        status: 'aberto',
+        replies: [],
+        createdAt: now,
+        hasUnreadReply: false,
+    };
+    localStorage.setItem(TICKETS_KEY, JSON.stringify([newTicket, ...existing]));
+    return newTicket;
+}
+
+export function addTicketReply(ticketId: string, reply: Omit<TicketReply, 'date'>): void {
+    const existing = getTickets();
+    const now = new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    });
+    const updated = existing.map(t => {
+        if (t.id !== ticketId) return t;
+        const isManagerReply = reply.authorRole === 'gestor_master';
+        return {
+            ...t,
+            replies: [...t.replies, { ...reply, date: now }],
+            status: t.status === 'aberto' ? 'em_andamento' as const : t.status,
+            hasUnreadReply: isManagerReply ? true : t.hasUnreadReply,
+        };
+    });
+    localStorage.setItem(TICKETS_KEY, JSON.stringify(updated));
+}
+
+export function markTicketRepliesRead(ticketId: string): void {
+    const existing = getTickets();
+    const updated = existing.map(t => t.id === ticketId ? { ...t, hasUnreadReply: false } : t);
+    localStorage.setItem(TICKETS_KEY, JSON.stringify(updated));
+}
+
+export function updateTicketStatus(ticketId: string, status: StoredTicket['status']): void {
+    const existing = getTickets();
+    const updated = existing.map(t => t.id === ticketId ? { ...t, status } : t);
+    localStorage.setItem(TICKETS_KEY, JSON.stringify(updated));
+}
+
+export function getOpenTicketsCount(): number {
+    return getTickets().filter(t => t.status !== 'resolvido').length;
+}
+
+// ── Avaliações (Patient → Parecerista) ───────────────────────────────────────
+
+export interface StoredRating {
+    id: string;
+    doctorName: string;
+    doctorSpecialty: string;
+    /** The team/clinic the doctor belongs to */
+    team: string;
+    patientName: string;
+    stars: number;       // 1–5
+    comment: string;
+    date: string;        // dd/mm/yyyy
+    consultaId: string;  // links back to a triagem / consulta id
+}
+
+const RATINGS_KEY = 'pc_ratings';
+
+export function getRatings(): StoredRating[] {
+    try {
+        const raw = localStorage.getItem(RATINGS_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+export function getRatingsByDoctor(doctorName: string): StoredRating[] {
+    return getRatings().filter(r => r.doctorName === doctorName);
+}
+
+export function getRatingsByTeam(team: string): StoredRating[] {
+    return getRatings().filter(r => r.team === team);
+}
+
+export function addRating(rating: Omit<StoredRating, 'id'>): StoredRating {
+    const existing = getRatings();
+    const newRating: StoredRating = { ...rating, id: `rat_${Date.now()}` };
+    localStorage.setItem(RATINGS_KEY, JSON.stringify([newRating, ...existing]));
+    return newRating;
+}
+
+/** Average stars for a given doctor (0 if no ratings) */
+export function getAverageStars(doctorName: string): number {
+    const ratings = getRatingsByDoctor(doctorName);
+    if (ratings.length === 0) return 0;
+    const sum = ratings.reduce((acc, r) => acc + r.stars, 0);
+    return Math.round((sum / ratings.length) * 10) / 10;
+}
+
+/** Seed mock ratings so the UI looks populated for demo purposes */
+export function seedMockRatings(): void {
+    if (getRatings().length > 0) return; // already seeded
+    const today = new Date();
+    const fmt = (d: Date) => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const mockRatings: Omit<StoredRating, 'id'>[] = [
+        { doctorName: 'Dr. Marcelo Ferreira', doctorSpecialty: 'Cardiologia', team: 'Clínica SCI', patientName: 'Carlos Lima', stars: 5, comment: 'Atendimento excelente, muito atencioso e claro nas explicações.', date: fmt(new Date(today.getTime() - 2 * 86400000)), consultaId: 'tri_001' },
+        { doctorName: 'Dr. Marcelo Ferreira', doctorSpecialty: 'Cardiologia', team: 'Clínica SCI', patientName: 'Ana Souza', stars: 4, comment: 'Ótimo profissional, respondeu todas as dúvidas.', date: fmt(new Date(today.getTime() - 5 * 86400000)), consultaId: 'tri_002' },
+        { doctorName: 'Dr. Marcelo Ferreira', doctorSpecialty: 'Cardiologia', team: 'Clínica SCI', patientName: 'João Pedro', stars: 5, comment: 'Parecer muito completo e bem fundamentado.', date: fmt(new Date(today.getTime() - 8 * 86400000)), consultaId: 'tri_003' },
+        { doctorName: 'Dra. Ana Paula Rocha', doctorSpecialty: 'Clínica Geral', team: 'Clínica SCI', patientName: 'Maria Santos', stars: 4, comment: 'Muito competente e cuidadosa.', date: fmt(new Date(today.getTime() - 3 * 86400000)), consultaId: 'tri_004' },
+        { doctorName: 'Dra. Ana Paula Rocha', doctorSpecialty: 'Clínica Geral', team: 'Clínica SCI', patientName: 'Roberto Alves', stars: 3, comment: 'Bom atendimento, mas poderia ser mais detalhado.', date: fmt(new Date(today.getTime() - 10 * 86400000)), consultaId: 'tri_005' },
+        { doctorName: 'Dr. Ricardo Lemos', doctorSpecialty: 'Neurologia', team: 'Equipe Norte', patientName: 'Fernanda Costa', stars: 5, comment: 'Incrível! Resolveu meu problema rapidamente.', date: fmt(new Date(today.getTime() - 1 * 86400000)), consultaId: 'tri_006' },
+        { doctorName: 'Dr. Ricardo Lemos', doctorSpecialty: 'Neurologia', team: 'Equipe Norte', patientName: 'Lucas Mendes', stars: 4, comment: 'Profissional excelente.', date: fmt(new Date(today.getTime() - 6 * 86400000)), consultaId: 'tri_007' },
+    ];
+    localStorage.setItem(RATINGS_KEY, JSON.stringify(mockRatings.map((r, i) => ({ ...r, id: `rat_seed_${i}` }))));
+}
+
+
+// ── Repasse de Parecer ────────────────────────────────────────────────────────
+
+export interface RepasseHistoricoItem {
+    medico: string;
+    motivo: string;
+    data: string;
+}
+
+export interface StoredRepasse {
+    id: string;
+    patientId: string;
+    patientName: string;
+    especialidade: string;
+    hipotese: string;
+    priority: 'Alta' | 'Média' | 'Baixa';
+    queixaDetalhada: string;
+    motivoRepasse: string;
+    repassadoPor: string;
+    repassadoEm: string;
+    status: 'disponivel' | 'em_atendimento' | 'finalizado';
+    historicoRepasses: RepasseHistoricoItem[];
+}
+
+const REPASSES_KEY = 'pc_repasses';
+
+export function getRepasses(): StoredRepasse[] {
+    try {
+        const raw = localStorage.getItem(REPASSES_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+export function getRepassesDisponiveis(): StoredRepasse[] {
+    return getRepasses().filter(r => r.status === 'disponivel');
+}
+
+export function addRepasse(data: Omit<StoredRepasse, 'id' | 'status' | 'repassadoEm'>): StoredRepasse {
+    const existing = getRepasses();
+    const newRepasse: StoredRepasse = {
+        ...data,
+        id: `rep_${Date.now()}`,
+        status: 'disponivel',
+        repassadoEm: new Date().toLocaleDateString('pt-BR', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+        }),
+    };
+    localStorage.setItem(REPASSES_KEY, JSON.stringify([newRepasse, ...existing]));
+    return newRepasse;
+}
+
+export function assumirRepasse(id: string): void {
+    const existing = getRepasses();
+    const updated = existing.map(r =>
+        r.id === id ? { ...r, status: 'em_atendimento' as const } : r
+    );
+    localStorage.setItem(REPASSES_KEY, JSON.stringify(updated));
+}
+
+export function updateRepasseStatus(id: string, status: StoredRepasse['status']): void {
+    const existing = getRepasses();
+    const updated = existing.map(r => r.id === id ? { ...r, status } : r);
+    localStorage.setItem(REPASSES_KEY, JSON.stringify(updated));
+}

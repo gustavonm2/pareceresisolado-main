@@ -3,10 +3,12 @@ import type { QueueItem } from '../types';
 import { getMockPatientDetails } from '../utils/patientData';
 import {
   ArrowLeft, Phone, Mail, User, Calendar, Activity,
-  Pill, Stethoscope, Info, FileText as FileIcon, ChevronDown, Sparkles, PlusSquare, Video
+  Pill, Stethoscope, FileText as FileIcon, ChevronDown, Sparkles, PlusSquare, Video, ArrowRightLeft
 } from 'lucide-react';
 import ClinicalAttendance from './ClinicalAttendance';
 import VideoCallOverlay from './VideoCallOverlay';
+import RepasseModal from './RepasseModal';
+import { addRepasse } from '../utils/patientStore';
 
 interface PatientDetailsProps {
   patientId: string;
@@ -48,6 +50,23 @@ const AccordionItem = ({ icon: Icon, title, rightElement, children, defaultOpen 
 const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onStartAttendance, onFinishAttendance, initialData, isAttending = false }) => {
   const patient = getMockPatientDetails(patientId, initialData);
   const [showVideoCall, setShowVideoCall] = useState(false);
+  const [showRepasseModal, setShowRepasseModal] = useState(false);
+
+  const handleRepasse = (motivo: string) => {
+    addRepasse({
+      patientId: patient.id,
+      patientName: patient.patientName,
+      especialidade: patient.type || 'Especialidade',
+      hipotese: patient.requestDescription || '',
+      priority: 'Média',
+      queixaDetalhada: patient.requestDescription || '',
+      motivoRepasse: motivo,
+      repassadoPor: patient.requesterName || 'Parecerista',
+      historicoRepasses: [],
+    });
+    setShowRepasseModal(false);
+    onBack();
+  };
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen bg-[#F8FAFC]" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -103,18 +122,17 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
 
 
 
-          {/* Queixa Principal */}
-          <div className="bg-white rounded-[10px] shadow-sm overflow-hidden border border-transparent">
-            <div className="bg-[#FEF2F2] px-6 py-4 flex items-center">
-              <Info className="w-[18px] h-[18px] text-[#DC2626] mr-3" />
-              <h3 className="font-semibold text-[#DC2626] text-[11px]">Queixa Principal Atual</h3>
-            </div>
-            <div className="p-6">
-              <p className="text-[#334155] font-medium leading-[1.6] text-[11px]">
-                {patient.currentChiefComplaint || "Paciente relata dor de cabeça frontal persistente há 3 dias, associada a fotofobia. Nega febre ou vômitos."}
-              </p>
-            </div>
+          {/* Queixa Principal — vermelho rubro */}
+          <div
+            className="bg-white rounded-[10px] shadow-sm px-6 py-4"
+            style={{ borderLeft: '3px solid #C0392B' }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wide mb-1.5" style={{ color: '#C0392B' }}>Queixa Principal Atual</p>
+            <p className="text-[#334155] font-medium leading-[1.6] text-[11px]">
+              {patient.currentChiefComplaint || "Paciente relata dor de cabeça frontal persistente há 3 dias, associada a fotofobia. Nega febre ou vômitos."}
+            </p>
           </div>
+          <hr className="border-none h-px bg-[#E2E8F0]" />
 
           {/* Actions */}
           <div className="space-y-3 pt-2">
@@ -122,16 +140,23 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
               <>
                 <button
                   onClick={onStartAttendance}
-                  className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl font-semibold shadow-[0_4px_12px_rgba(37,99,235,0.2)] transition-all flex items-center justify-center text-[11px]"
+                  className="w-full py-3.5 bg-[#1D3461] hover:bg-[#162749] text-white rounded-xl font-semibold shadow-[0_4px_12px_rgba(29,52,97,0.2)] transition-all flex items-center justify-center text-[11px]"
                 >
                   <FileIcon className="w-5 h-5 mr-3" />
                   Iniciar atendimento
                 </button>
                 <button
-                  className="w-full py-3.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#2563EB] rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center text-[11px]"
+                  className="w-full py-3.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#1D3461] rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center text-[11px]"
                 >
                   <Sparkles className="w-5 h-5 mr-3" />
                   Automatização do cuidado
+                </button>
+                <button
+                  onClick={() => setShowRepasseModal(true)}
+                  className="w-full py-3.5 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-orange-700 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center text-[11px]"
+                >
+                  <ArrowRightLeft className="w-5 h-5 mr-3" />
+                  Repassar sem Atender
                 </button>
               </>
             ) : (
@@ -154,7 +179,7 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
               title="Histórico de Consultas"
               defaultOpen={false}
               rightElement={
-                <button className="text-[#2563EB] hover:text-[#1D4ED8] text-[11px] font-semibold transition-colors">
+                <button className="text-[#1D3461] hover:text-[#162749] text-[11px] font-semibold transition-colors">
                   Ver Prontuário Completo
                 </button>
               }
@@ -216,7 +241,7 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
                           <td className="table-text text-[11px] font-bold text-[#94A3B8] w-8">{idx + 1}</td>
                           <td className="table-text text-[11px] font-bold text-[#0F172A]">{med}</td>
                           <td className="table-text whitespace-nowrap">
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EFF6FF] text-[#2563EB] capitalize">Uso Contínuo</span>
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold bg-[#EEF4FA] text-[#1D3461] capitalize">Uso Contínuo</span>
                           </td>
                         </tr>
                       ))}
@@ -243,13 +268,13 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
                       {patient.examResults.map((exam, idx) => (
                         <tr key={idx} className="table-row-hover cursor-pointer group">
                           <td className="table-text whitespace-nowrap">
-                            <span className="text-[11px] font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{exam.name}</span>
+                            <span className="text-[11px] font-bold text-[#0F172A] group-hover:text-[#1D3461] transition-colors">{exam.name}</span>
                           </td>
                           <td className="table-text whitespace-nowrap text-[11px] font-medium text-[#475569]">
                             {exam.date}
                           </td>
                           <td className="table-text whitespace-nowrap text-right">
-                            <button className="text-[#2563EB] hover:text-[#1D4ED8] font-bold text-[11px] bg-[#EFF6FF] px-3 py-1.5 rounded-lg transition-colors">Ver Laudo</button>
+                            <button className="text-[#1D3461] hover:text-[#162749] font-bold text-[11px] bg-[#EEF4FA] px-3 py-1.5 rounded-lg transition-colors">Ver Laudo</button>
                           </td>
                         </tr>
                       ))}
@@ -287,13 +312,23 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
         />
       )}
 
+      {/* Repasse Modal */}
+      {showRepasseModal && (
+        <RepasseModal
+          patientName={patient.patientName}
+          especialidade={patient.type || 'Especialidade'}
+          onConfirm={handleRepasse}
+          onCancel={() => setShowRepasseModal(false)}
+        />
+      )}
+
       {/* Floating Help Button - Hide when attending because the UI is already busy */}
       {!isAttending && (
         <div className="fixed bottom-8 right-8 flex items-center gap-4 z-40">
           <div className="bg-white rounded-full px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[#E2E8F0] text-[11px] font-bold text-[#64748B] transition-opacity hover:opacity-90 cursor-pointer">
             Precisa de ajuda?
           </div>
-          <button className="h-14 w-14 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-[0_8px_16px_rgba(37,99,235,0.25)] flex items-center justify-center transition-transform hover:scale-105 relative">
+          <button className="h-14 w-14 rounded-full bg-[#1D3461] hover:bg-[#162749] text-white shadow-[0_8px_16px_rgba(29,52,97,0.25)] flex items-center justify-center transition-transform hover:scale-105 relative">
             <Sparkles className="w-[22px] h-[22px]" />
             <span className="absolute top-3.5 right-3.5 w-[6px] h-[6px] bg-white rounded-full"></span>
           </button>
