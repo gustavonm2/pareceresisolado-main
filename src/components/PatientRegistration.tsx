@@ -1,44 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle, MapPin, Lock, User } from 'lucide-react';
-
-// Mock data for States and Cities
-const STATES = [
-    { uf: 'AC', name: 'Acre' },
-    { uf: 'AL', name: 'Alagoas' },
-    { uf: 'AP', name: 'Amapá' },
-    { uf: 'AM', name: 'Amazonas' },
-    { uf: 'BA', name: 'Bahia' },
-    { uf: 'CE', name: 'Ceará' },
-    { uf: 'DF', name: 'Distrito Federal' },
-    { uf: 'ES', name: 'Espírito Santo' },
-    { uf: 'GO', name: 'Goiás' },
-    { uf: 'MA', name: 'Maranhão' },
-    { uf: 'MT', name: 'Mato Grosso' },
-    { uf: 'MS', name: 'Mato Grosso do Sul' },
-    { uf: 'MG', name: 'Minas Gerais' },
-    { uf: 'PA', name: 'Pará' },
-    { uf: 'PB', name: 'Paraíba' },
-    { uf: 'PR', name: 'Paraná' },
-    { uf: 'PE', name: 'Pernambuco' },
-    { uf: 'PI', name: 'Piauí' },
-    { uf: 'RJ', name: 'Rio de Janeiro' },
-    { uf: 'RN', name: 'Rio Grande do Norte' },
-    { uf: 'RS', name: 'Rio Grande do Sul' },
-    { uf: 'RO', name: 'Rondônia' },
-    { uf: 'RR', name: 'Roraima' },
-    { uf: 'SC', name: 'Santa Catarina' },
-    { uf: 'SP', name: 'São Paulo' },
-    { uf: 'SE', name: 'Sergipe' },
-    { uf: 'TO', name: 'Tocantins' }
-];
-
-// Simple mock for cities. In a real app, this would be an API call based on the selected state.
-const getMockCitiesForState = (uf: string) => {
-    if (!uf) return [];
-    const baseCities = ['Capital', 'Interior 1', 'Interior 2', 'Litoral'];
-    return baseCities.map(city => `${city} - ${uf}`);
-};
+import { ArrowRight, CheckCircle, MapPin, Lock, User, Loader2, AlertCircle } from 'lucide-react';
+import {
+    fetchAddressByCep,
+    fetchStates,
+    fetchCitiesByState,
+    type BrazilState,
+    type BrazilCity,
+} from '../services/brazilGeoService';
 
 const PatientRegistration: React.FC = () => {
     const navigate = useNavigate();
@@ -56,7 +25,6 @@ const PatientRegistration: React.FC = () => {
         motherName: '',
         mobilePhone: '',
         altPhone: '',
-        email: '',
         // Step 2: Endereço
         cep: '',
         street: '',
@@ -68,28 +36,39 @@ const PatientRegistration: React.FC = () => {
         // Step 3: Senha
         password: '',
         confirmPassword: '',
-        // Step 4: Histórico de Saúde
-        mainComplaint: '',
-        diseaseHistory: '',
-        symptomDuration: '',
-        currentMedications: '',
-        allergies: '',
-        preexistingConditions: '',
-        previousSurgeries: ''
     });
 
-    const [availableCities, setAvailableCities] = useState<string[]>([]);
+    // ── IBGE State & Cities ──────────────────────────────────────────────────
+    const [allStates, setAllStates] = useState<BrazilState[]>([]);
+    const [availableCities, setAvailableCities] = useState<BrazilCity[]>([]);
+    const [loadingStates, setLoadingStates] = useState(false);
+    const [loadingCities, setLoadingCities] = useState(false);
 
-    // Calculate Age dynamically when birthDate changes
+    // ── CEP lookup ───────────────────────────────────────────────────────────
+    const [loadingCep, setLoadingCep] = useState(false);
+    const [cepError, setCepError] = useState('');
+
+    // Ref to avoid double-fetching states on StrictMode
+    const statesFetched = useRef(false);
+
+    // ── Fetch states once on mount ───────────────────────────────────────────
+    useEffect(() => {
+        if (statesFetched.current) return;
+        statesFetched.current = true;
+        setLoadingStates(true);
+        fetchStates()
+            .then(data => setAllStates(data))
+            .finally(() => setLoadingStates(false));
+    }, []);
+
+    // ── Calculate age dynamically ────────────────────────────────────────────
     useEffect(() => {
         if (formData.birthDate) {
             const birth = new Date(formData.birthDate);
             const today = new Date();
             let calculatedAge = today.getFullYear() - birth.getFullYear();
             const m = today.getMonth() - birth.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-                calculatedAge--;
-            }
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) calculatedAge--;
             if (calculatedAge >= 0) {
                 setFormData(prev => ({ ...prev, age: calculatedAge.toString() }));
             }
@@ -98,15 +77,70 @@ const PatientRegistration: React.FC = () => {
         }
     }, [formData.birthDate]);
 
-    // Update cities when State changes
+    // ── Fetch cities when state changes ──────────────────────────────────────
     useEffect(() => {
-        setAvailableCities(getMockCitiesForState(formData.state));
-        setFormData(prev => ({ ...prev, city: '' })); // Reset city when state changes
+        if (!formData.state) {
+            setAvailableCities([]);
+            return;
+        }
+        setLoadingCities(true);
+        setFormData(prev => ({ ...prev, city: '' }));
+        fetchCitiesByState(formData.state)
+            .then(data => setAvailableCities(data))
+            .finally(() => setLoadingCities(false));
     }, [formData.state]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    // ── Generic input handler ────────────────────────────────────────────────
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // ── CEP lookup handler ───────────────────────────────────────────────────
+    const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value;
+        // Format: 00000-000
+        const digits = raw.replace(/\D/g, '').slice(0, 8);
+        const formatted = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+        setFormData(prev => ({ ...prev, cep: formatted }));
+        setCepError('');
+
+        if (digits.length === 8) {
+            setLoadingCep(true);
+            const result = await fetchAddressByCep(digits);
+            setLoadingCep(false);
+
+            if (!result) {
+                setCepError('CEP não encontrado. Verifique e preencha o endereço manualmente.');
+                return;
+            }
+
+            // Pre-fill address fields
+            setFormData(prev => ({
+                ...prev,
+                street: result.logradouro || prev.street,
+                neighborhood: result.bairro || prev.neighborhood,
+                state: result.uf || prev.state,
+                // city will be filled after IBGE cities load
+            }));
+
+            // Fetch cities for the state returned by ViaCEP, then set city
+            if (result.uf) {
+                setLoadingCities(true);
+                const cities = await fetchCitiesByState(result.uf);
+                setLoadingCities(false);
+                setAvailableCities(cities);
+                const matchedCity = cities.find(
+                    c => c.nome.toLowerCase() === result.localidade.toLowerCase()
+                );
+                setFormData(prev => ({
+                    ...prev,
+                    city: matchedCity ? matchedCity.nome : '',
+                }));
+            }
+        }
     };
 
     const handleNextStep = (e: React.FormEvent) => {
@@ -117,17 +151,20 @@ const PatientRegistration: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
-            alert("As senhas informadas não coincidem. Por favor, verifique.");
+            alert('As senhas informadas não coincidem. Por favor, verifique.');
             return;
         }
         localStorage.setItem('userRole', 'paciente');
         navigate('/portal-paciente');
     };
 
-    const getProgressWidth = () => {
-        return `${((step - 1) / 2) * 100}%`;
-    };
+    const getProgressWidth = () => `${((step - 1) / 2) * 100}%`;
 
+    // ── Input class helper ───────────────────────────────────────────────────
+    const inputCls =
+        'w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all';
+    const inputReadonlyCls =
+        'w-full px-4 py-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-[14px] font-bold text-[#64748B] cursor-not-allowed';
 
     return (
         <div className="min-h-screen bg-[#F1F5F9] flex flex-col font-sans">
@@ -144,7 +181,7 @@ const PatientRegistration: React.FC = () => {
             <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
                 <div className="w-full max-w-[800px]">
 
-                    {/* Progress Bar Container */}
+                    {/* Progress Bar */}
                     <div className="mb-8 animate-in fade-in duration-500">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-[11px] font-bold text-[#64748B] capitalize">
@@ -158,13 +195,13 @@ const PatientRegistration: React.FC = () => {
                             <div
                                 className="bg-[#1D3461] h-2.5 rounded-full transition-all duration-500 ease-out"
                                 style={{ width: getProgressWidth() }}
-                            ></div>
+                            />
                         </div>
                     </div>
 
                     <div className="bg-white rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.04)] overflow-hidden border border-[#E2E8F0]">
 
-                        {/* STEP 1: IDENTIFICATION */}
+                        {/* ── STEP 1: IDENTIFICATION ──────────────────────────── */}
                         {step === 1 && (
                             <div className="p-8 sm:p-10 animate-in slide-in-from-right-8 duration-300">
                                 <div className="mb-8">
@@ -179,20 +216,20 @@ const PatientRegistration: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
                                         <div className="md:col-span-12 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Nome Completo *</label>
-                                            <input required name="name" value={formData.name} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Nome sem abreviações" />
+                                            <input required name="name" value={formData.name} onChange={handleInputChange} type="text" className={inputCls} placeholder="Nome sem abreviações" />
                                         </div>
 
                                         <div className="md:col-span-4 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Data de Nasc. *</label>
-                                            <input required name="birthDate" value={formData.birthDate} onChange={handleInputChange} type="date" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" />
+                                            <input required name="birthDate" value={formData.birthDate} onChange={handleInputChange} type="date" className={inputCls} />
                                         </div>
                                         <div className="md:col-span-2 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Idade</label>
-                                            <input disabled name="age" value={formData.age} type="text" className="w-full px-4 py-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-[14px] font-bold text-[#64748B] cursor-not-allowed" placeholder="-" />
+                                            <input disabled name="age" value={formData.age} type="text" className={inputReadonlyCls} placeholder="-" />
                                         </div>
                                         <div className="md:col-span-6 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Sexo biológico *</label>
-                                            <select required name="gender" value={formData.gender} onChange={handleInputChange} className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all text-[#0F172A]">
+                                            <select required name="gender" value={formData.gender} onChange={handleInputChange} className={inputCls + ' text-[#0F172A]'}>
                                                 <option value="" disabled>Selecione</option>
                                                 <option value="M">Masculino</option>
                                                 <option value="F">Feminino</option>
@@ -201,28 +238,28 @@ const PatientRegistration: React.FC = () => {
 
                                         <div className="md:col-span-6 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">CPF *</label>
-                                            <input required name="cpf" value={formData.cpf} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="000.000.000-00" />
+                                            <input required name="cpf" value={formData.cpf} onChange={handleInputChange} type="text" className={inputCls} placeholder="000.000.000-00" />
                                         </div>
                                         <div className="md:col-span-6 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">CNS (Cartão SUS)</label>
-                                            <input name="cns" value={formData.cns} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Opcional" />
+                                            <input name="cns" value={formData.cns} onChange={handleInputChange} type="text" className={inputCls} placeholder="Opcional" />
                                         </div>
 
                                         <div className="md:col-span-12 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Nome da Mãe *</label>
-                                            <input required name="motherName" value={formData.motherName} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Nome completo da mãe" />
+                                            <input required name="motherName" value={formData.motherName} onChange={handleInputChange} type="text" className={inputCls} placeholder="Nome completo da mãe" />
                                         </div>
 
                                         <div className="md:col-span-6 space-y-2 relative">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Telefone Celular *</label>
-                                            <input required name="mobilePhone" value={formData.mobilePhone} onChange={handleInputChange} type="tel" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="(00) 00000-0000" />
+                                            <input required name="mobilePhone" value={formData.mobilePhone} onChange={handleInputChange} type="tel" className={inputCls} placeholder="(00) 00000-0000" />
                                             <p className="text-[11px] font-bold text-[#10B981] mt-1 flex items-center">
                                                 <CheckCircle className="w-3 h-3 mr-1" /> WhatsApp principal
                                             </p>
                                         </div>
                                         <div className="md:col-span-6 space-y-2 flex flex-col justify-start">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Telefone Alternativo / E-mail</label>
-                                            <input name="altPhone" value={formData.altPhone} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Outro contato" />
+                                            <input name="altPhone" value={formData.altPhone} onChange={handleInputChange} type="text" className={inputCls} placeholder="Outro contato" />
                                         </div>
                                     </div>
 
@@ -236,7 +273,7 @@ const PatientRegistration: React.FC = () => {
                             </div>
                         )}
 
-                        {/* STEP 2: ADDRESS */}
+                        {/* ── STEP 2: ADDRESS ─────────────────────────────────── */}
                         {step === 2 && (
                             <div className="p-8 sm:p-10 animate-in slide-in-from-right-8 duration-300">
                                 <div className="mb-8">
@@ -244,62 +281,168 @@ const PatientRegistration: React.FC = () => {
                                         <MapPin className="w-7 h-7 mr-3 text-[#1D3461]" />
                                         Endereço de Residência
                                     </h1>
-                                    <p className="text-[14px] font-medium text-[#64748B]">Defina sua localização para fins de territorialização (UBS de referência).</p>
+                                    <p className="text-[14px] font-medium text-[#64748B]">
+                                        Digite o CEP para preencher o endereço automaticamente.
+                                    </p>
                                 </div>
 
                                 <form onSubmit={handleNextStep} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+
+                                        {/* CEP field with loading indicator */}
                                         <div className="md:col-span-4 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">CEP *</label>
-                                            <input required name="cep" value={formData.cep} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="00000-000" />
+                                            <div className="relative">
+                                                <input
+                                                    required
+                                                    name="cep"
+                                                    value={formData.cep}
+                                                    onChange={handleCepChange}
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    maxLength={9}
+                                                    className={inputCls + (cepError ? ' border-red-400 focus:ring-red-400' : '')}
+                                                    placeholder="00000-000"
+                                                />
+                                                {loadingCep && (
+                                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1D3461] animate-spin" />
+                                                )}
+                                            </div>
+                                            {cepError && (
+                                                <p className="flex items-start gap-1 text-[11px] font-medium text-red-500 mt-1">
+                                                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                                    {cepError}
+                                                </p>
+                                            )}
+                                            {!cepError && !loadingCep && formData.street && (
+                                                <p className="flex items-center gap-1 text-[11px] font-bold text-[#10B981] mt-1">
+                                                    <CheckCircle className="w-3 h-3" /> Endereço encontrado!
+                                                </p>
+                                            )}
                                         </div>
-                                        <div className="md:col-span-8 space-y-2">
-                                            {/* Spacer for alignment */}
-                                        </div>
+
+                                        <div className="md:col-span-8" /> {/* spacer */}
 
                                         <div className="md:col-span-9 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Logradouro (Rua, Av.) *</label>
-                                            <input required name="street" value={formData.street} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Ex: Av. Brasil" />
+                                            <input
+                                                required
+                                                name="street"
+                                                value={formData.street}
+                                                onChange={handleInputChange}
+                                                type="text"
+                                                className={inputCls}
+                                                placeholder="Ex: Av. Brasil"
+                                            />
                                         </div>
                                         <div className="md:col-span-3 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Número *</label>
-                                            <input required name="number" value={formData.number} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="123" />
+                                            <input
+                                                required
+                                                name="number"
+                                                value={formData.number}
+                                                onChange={handleInputChange}
+                                                type="text"
+                                                className={inputCls}
+                                                placeholder="123"
+                                            />
                                         </div>
 
                                         <div className="md:col-span-6 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Complemento</label>
-                                            <input name="complement" value={formData.complement} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Apto, Bloco (Opcional)" />
+                                            <input
+                                                name="complement"
+                                                value={formData.complement}
+                                                onChange={handleInputChange}
+                                                type="text"
+                                                className={inputCls}
+                                                placeholder="Apto, Bloco (Opcional)"
+                                            />
                                         </div>
                                         <div className="md:col-span-6 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Bairro *</label>
-                                            <input required name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} type="text" className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Seu bairro" />
+                                            <input
+                                                required
+                                                name="neighborhood"
+                                                value={formData.neighborhood}
+                                                onChange={handleInputChange}
+                                                type="text"
+                                                className={inputCls}
+                                                placeholder="Seu bairro"
+                                            />
                                         </div>
 
+                                        {/* Estado — loaded from IBGE */}
                                         <div className="md:col-span-5 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Estado (UF) *</label>
-                                            <select required name="state" value={formData.state} onChange={handleInputChange} className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all text-[#0F172A]">
-                                                <option value="" disabled>Selecione</option>
-                                                {STATES.map(st => (
-                                                    <option key={st.uf} value={st.uf}>{st.name}</option>
-                                                ))}
-                                            </select>
+                                            <div className="relative">
+                                                <select
+                                                    required
+                                                    name="state"
+                                                    value={formData.state}
+                                                    onChange={handleInputChange}
+                                                    disabled={loadingStates}
+                                                    className={inputCls + ' text-[#0F172A] disabled:opacity-60 disabled:cursor-not-allowed pr-8'}
+                                                >
+                                                    <option value="" disabled>
+                                                        {loadingStates ? 'Carregando estados...' : 'Selecione'}
+                                                    </option>
+                                                    {allStates.map(st => (
+                                                        <option key={st.sigla} value={st.sigla}>
+                                                            {st.nome}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {loadingStates && (
+                                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1D3461] animate-spin pointer-events-none" />
+                                                )}
+                                            </div>
                                         </div>
+
+                                        {/* Cidade — loaded from IBGE based on state */}
                                         <div className="md:col-span-7 space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Município *</label>
-                                            <select required name="city" value={formData.city} onChange={handleInputChange} disabled={!formData.state} className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] focus:ring-2 focus:ring-[#1D3461] transition-all text-[#0F172A] disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <option value="" disabled>{formData.state ? 'Selecione o Município' : 'Escolha o Estado 1º'}</option>
-                                                {availableCities.map(city => (
-                                                    <option key={city} value={city}>{city}</option>
-                                                ))}
-                                            </select>
+                                            <div className="relative">
+                                                <select
+                                                    required
+                                                    name="city"
+                                                    value={formData.city}
+                                                    onChange={handleInputChange}
+                                                    disabled={!formData.state || loadingCities}
+                                                    className={inputCls + ' text-[#0F172A] disabled:opacity-50 disabled:cursor-not-allowed pr-8'}
+                                                >
+                                                    <option value="" disabled>
+                                                        {loadingCities
+                                                            ? 'Carregando municípios...'
+                                                            : formData.state
+                                                                ? 'Selecione o Município'
+                                                                : 'Escolha o Estado 1º'}
+                                                    </option>
+                                                    {availableCities.map(city => (
+                                                        <option key={city.id} value={city.nome}>
+                                                            {city.nome}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {loadingCities && (
+                                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1D3461] animate-spin pointer-events-none" />
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div className="pt-6 border-t border-[#F1F5F9] flex items-center justify-between">
-                                        <button type="button" onClick={() => setStep(1)} className="px-6 py-3.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#475569] rounded-xl text-[14px] font-bold transition-all shadow-sm flex items-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep(1)}
+                                            className="px-6 py-3.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#475569] rounded-xl text-[14px] font-bold transition-all shadow-sm flex items-center"
+                                        >
                                             Voltar
                                         </button>
-                                        <button type="submit" className="px-8 py-3.5 bg-[#1D3461] hover:bg-[#162749] text-white rounded-xl text-[14px] font-bold transition-all shadow-md flex items-center group">
+                                        <button
+                                            type="submit"
+                                            className="px-8 py-3.5 bg-[#1D3461] hover:bg-[#162749] text-white rounded-xl text-[14px] font-bold transition-all shadow-md flex items-center group"
+                                        >
                                             Próxima Etapa
                                             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                         </button>
@@ -308,7 +451,7 @@ const PatientRegistration: React.FC = () => {
                             </div>
                         )}
 
-                        {/* STEP 3: PASSWORD */}
+                        {/* ── STEP 3: PASSWORD ─────────────────────────────────── */}
                         {step === 3 && (
                             <div className="p-8 sm:p-10 animate-in slide-in-from-right-8 duration-300">
                                 <div className="mb-8">
@@ -320,7 +463,6 @@ const PatientRegistration: React.FC = () => {
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="space-y-6">
-
                                     <div className="bg-[#EEF4FA] border border-[#A8C4DA] rounded-2xl p-6 mb-8 flex items-start">
                                         <div className="bg-white p-2 rounded-lg shadow-sm mr-4 shrink-0">
                                             <User className="w-6 h-6 text-[#1D3461]" />
@@ -336,19 +478,44 @@ const PatientRegistration: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Crie uma Senha *</label>
-                                            <input required name="password" value={formData.password} onChange={handleInputChange} type="password" minLength={6} className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] text-[#0F172A] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Mínimo de 6 caracteres" />
+                                            <input
+                                                required
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleInputChange}
+                                                type="password"
+                                                minLength={6}
+                                                className={inputCls + ' text-[#0F172A]'}
+                                                placeholder="Mínimo de 6 caracteres"
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-bold text-[#475569] capitalize">Confirme a Senha *</label>
-                                            <input required name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} type="password" minLength={6} className="w-full px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[14px] text-[#0F172A] focus:ring-2 focus:ring-[#1D3461] transition-all" placeholder="Repita a senha" />
+                                            <input
+                                                required
+                                                name="confirmPassword"
+                                                value={formData.confirmPassword}
+                                                onChange={handleInputChange}
+                                                type="password"
+                                                minLength={6}
+                                                className={inputCls + ' text-[#0F172A]'}
+                                                placeholder="Repita a senha"
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="pt-8 border-t border-[#F1F5F9] flex items-center justify-between">
-                                        <button type="button" onClick={() => setStep(2)} className="px-6 py-3.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#475569] rounded-xl text-[14px] font-bold transition-all shadow-sm flex items-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep(2)}
+                                            className="px-6 py-3.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#475569] rounded-xl text-[14px] font-bold transition-all shadow-sm flex items-center"
+                                        >
                                             Voltar
                                         </button>
-                                        <button type="submit" className="px-8 py-3.5 bg-[#1D3461] hover:bg-[#162749] text-white rounded-xl text-[14px] font-bold transition-all shadow-md flex items-center group">
+                                        <button
+                                            type="submit"
+                                            className="px-8 py-3.5 bg-[#1D3461] hover:bg-[#162749] text-white rounded-xl text-[14px] font-bold transition-all shadow-md flex items-center group"
+                                        >
                                             Concluir Cadastro
                                             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                         </button>
@@ -356,14 +523,11 @@ const PatientRegistration: React.FC = () => {
                                 </form>
                             </div>
                         )}
-
-
                     </div>
 
                     <p className="text-center mt-8 text-[12px] font-medium text-[#94A3B8]">
                         Seus dados são criptografados e tratados conforme a Lei Geral de Proteção de Dados (LGPD).
                     </p>
-
                 </div>
             </div>
         </div>

@@ -85,6 +85,8 @@ const ClinicRegistration: React.FC = () => {
     const { registerGroup, addMember } = useAuth();
 
     const [step, setStep] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
     // Step 0 — Admin data
     const [adminName, setAdminName] = useState('');
@@ -160,18 +162,27 @@ const ClinicRegistration: React.FC = () => {
     const removeMember = (id: string) => setMembers(prev => prev.filter(m => m.id !== id));
 
     // ── Final Submit ────────────────────────────────────────────────────────
-    const handleFinish = () => {
-        const groupId = registerGroup({
-            name: clinicName.trim(),
-            specialty: specialty.trim(),
-            adminName: adminName.trim(),
-            adminEmail: adminEmail.trim().toLowerCase(),
-            adminPassword,
-        });
-        members.forEach(m => {
-            addMember(groupId, { name: m.name, email: m.email, password: m.password, role: m.role });
-        });
-        navigate('/login', { state: { registered: true, clinicName } });
+    const handleFinish = async () => {
+        setSubmitError('');
+        setLoading(true);
+        try {
+            const groupId = await registerGroup({
+                name: clinicName.trim(),
+                specialty: specialty.trim(),
+                adminName: adminName.trim(),
+                adminEmail: adminEmail.trim().toLowerCase(),
+                adminPassword,
+            });
+            for (const m of members) {
+                await addMember(groupId, { name: m.name, email: m.email, password: m.password, role: m.role });
+            }
+            navigate('/login', { state: { registered: true, clinicName } });
+        } catch (err) {
+            setSubmitError('Erro ao finalizar o cadastro. Tente novamente.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // ── Input style helper ──────────────────────────────────────────────────
@@ -457,11 +468,22 @@ const ClinicRegistration: React.FC = () => {
                                     >
                                         <ArrowLeft className="w-4 h-4" /> Voltar
                                     </button>
+                                    {submitError && (
+                                        <p className="text-red-500 text-sm font-semibold bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+                                            {submitError}
+                                        </p>
+                                    )}
                                     <button
                                         onClick={handleFinish}
-                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-green-500/20"
+                                        disabled={loading}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-green-500/20"
                                     >
-                                        <Check className="w-4 h-4" /> Finalizar Cadastro
+                                        {loading ? (
+                                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                                        ) : (
+                                            <Check className="w-4 h-4" />
+                                        )}
+                                        {loading ? 'Salvando...' : 'Finalizar Cadastro'}
                                     </button>
                                 </div>
                             </div>

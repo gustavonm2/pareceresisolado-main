@@ -16,15 +16,17 @@ const Login: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showPalettePanel, setShowPalettePanel] = useState(false);
     const [loginError, setLoginError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const justRegistered = (location.state as { registered?: boolean; clinicName?: string } | null)?.registered;
     const registeredClinicName = (location.state as { registered?: boolean; clinicName?: string } | null)?.clinicName;
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoginError('');
         const lowerEmail = email.toLowerCase().trim();
 
+        // Legacy test accounts (kept for development convenience)
         if (lowerEmail.includes('usuario 1') && password === '1') {
             localStorage.setItem('userRole', 'triador');
             navigate('/dashboard');
@@ -43,15 +45,21 @@ const Login: React.FC = () => {
             return;
         }
 
-        const role = loginUser(email, password);
-        if (role) {
-            if (role === 'gestor_master') navigate('/gestao-master');
-            else if (role === 'paciente') navigate('/portal-paciente');
-            else navigate('/dashboard');
-            return;
+        setLoading(true);
+        try {
+            const role = await loginUser(email, password);
+            if (role) {
+                if (role === 'gestor_master') navigate('/gestao-master');
+                else if (role === 'paciente') navigate('/portal-paciente');
+                else navigate('/dashboard');
+                return;
+            }
+            setLoginError('E-mail ou senha incorretos. Verifique suas credenciais.');
+        } catch {
+            setLoginError('Erro ao conectar. Verifique sua conexão e tente novamente.');
+        } finally {
+            setLoading(false);
         }
-
-        setLoginError('E-mail ou senha incorretos. Verifique suas credenciais.');
     };
 
     const handleGestorMasterAccess = () => {
@@ -183,10 +191,14 @@ const Login: React.FC = () => {
                             {/* Submit */}
                             <button
                                 type="submit"
-                                className="w-full py-3.5 rounded-[12px] text-white text-[14px] font-bold tracking-wide transition-all hover:opacity-90 active:scale-[0.99] shadow-lg mt-1"
+                                disabled={loading}
+                                className="w-full py-3.5 rounded-[12px] text-white text-[14px] font-bold tracking-wide transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60 shadow-lg mt-1 flex items-center justify-center gap-2"
                                 style={{ background: 'linear-gradient(135deg, #1D3461 0%, #162749 100%)' }}
                             >
-                                Entrar
+                                {loading ? (
+                                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                                ) : null}
+                                {loading ? 'Entrando...' : 'Entrar'}
                             </button>
                         </form>
 

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     X, User, Calendar, Clock, AlertCircle, ChevronDown,
-    Activity, Stethoscope, CheckCircle, Send
+    Activity, Stethoscope, CheckCircle, Send, ImagePlus, Trash2, FileText, FilePlus
 } from 'lucide-react';
-import { addTriagem } from '../utils/patientStore';
+import { addTriagem, addClinicalImage, addClinicalReport } from '../utils/patientStore';
 
 interface PatientInfo {
     id: number;
@@ -50,8 +50,48 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
     const [observacoes, setObservacoes] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [errors, setErrors] = useState<Record<string, boolean>>({});
+    // Image upload state
+    const [imagePreviews, setImagePreviews] = useState<{ dataUrl: string; name: string }[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    // Report upload state
+    const [reportPreviews, setReportPreviews] = useState<{ dataUrl: string; name: string; size: string }[]>([]);
+    const reportInputRef = useRef<HTMLInputElement>(null);
 
 
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const dataUrl = ev.target?.result as string;
+                setImagePreviews(prev => [...prev, { dataUrl, name: file.name }]);
+            };
+            reader.readAsDataURL(file);
+        });
+        // Reset so the same file can be re-selected
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const removeImage = (idx: number) => {
+        setImagePreviews(prev => prev.filter((_, i) => i !== idx));
+    };
+
+    const handleReportUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        files.forEach(file => {
+            const reader = new FileReader();
+            const size = file.size < 1024 * 1024
+                ? `${(file.size / 1024).toFixed(1)} KB`
+                : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+            reader.onload = (ev) => {
+                setReportPreviews(prev => [...prev, { dataUrl: ev.target?.result as string, name: file.name, size }]);
+            };
+            reader.readAsDataURL(file);
+        });
+        if (reportInputRef.current) reportInputRef.current.value = '';
+    };
+
+    const removeReport = (idx: number) => setReportPreviews(prev => prev.filter((_, i) => i !== idx));
 
     const validate = () => {
         const e: Record<string, boolean> = {};
@@ -85,6 +125,27 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
             especialidade,
             observacoes,
             triadoPor: 'Enfermeiro(a) Triador(a)',
+        });
+
+        // Save clinical images
+        imagePreviews.forEach(img => {
+            addClinicalImage({
+                patientId: String(patient.id),
+                url: img.dataUrl,
+                caption: img.name,
+                uploadedBy: 'triador',
+            });
+        });
+
+        // Save clinical reports
+        reportPreviews.forEach(rep => {
+            addClinicalReport({
+                patientId: String(patient.id),
+                url: rep.dataUrl,
+                fileName: rep.name,
+                fileSize: rep.size,
+                uploadedBy: 'triador',
+            });
         });
 
         setSubmitted(true);
@@ -337,6 +398,102 @@ const TriagemDrawer: React.FC<TriagemDrawerProps> = ({ patient, onClose, onSubmi
                                 <Send className="w-4 h-4" />
                                 Encaminhar para Parecer
                             </button>
+                        </div>
+
+                        {/* Bloco 4 — Imagens Clínicas */}
+                        <div className="px-6 py-5 space-y-4 bg-white border-t border-[#E2E8F0]">
+                            <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest flex items-center gap-1.5">
+                                <ImagePlus className="w-3.5 h-3.5" /> Imagens Clínicas
+                            </p>
+                            <p className="text-[10px] text-[#94A3B8] font-medium -mt-2">Fotos de lesões, exames físicos ou qualquer imagem de apoio ao caso.</p>
+
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={handleImageUpload}
+                            />
+
+                            {/* Upload button */}
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#CBD5E1] rounded-xl text-[11px] font-bold text-[#64748B] hover:border-[#1D3461] hover:text-[#1D3461] hover:bg-[#EEF4FA] transition-all"
+                            >
+                                <ImagePlus className="w-4 h-4" />
+                                Selecionar Imagens
+                            </button>
+
+                            {/* Thumbnails grid */}
+                            {imagePreviews.length > 0 && (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {imagePreviews.map((img, idx) => (
+                                        <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#E2E8F0] aspect-square bg-[#F8FAFC]">
+                                            <img src={img.dataUrl} alt={img.name} className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(idx)}
+                                                className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-1">
+                                                <p className="text-[9px] text-white font-medium truncate">{img.name}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Bloco 5 — Relatórios Médicos */}
+                        <div className="px-6 py-5 space-y-4 bg-white border-t border-[#E2E8F0]">
+                            <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest flex items-center gap-1.5">
+                                <FileText className="w-3.5 h-3.5" /> Relatórios Médicos
+                            </p>
+                            <p className="text-[10px] text-[#94A3B8] font-medium -mt-2">Laudos, relatórios de consultas anteriores ou documentos médicos relevantes (PDF, imagem).</p>
+
+                            <input
+                                ref={reportInputRef}
+                                type="file"
+                                accept=".pdf,.doc,.docx,image/*"
+                                multiple
+                                className="hidden"
+                                onChange={handleReportUpload}
+                            />
+
+                            <button
+                                type="button"
+                                onClick={() => reportInputRef.current?.click()}
+                                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#CBD5E1] rounded-xl text-[11px] font-bold text-[#64748B] hover:border-[#1D3461] hover:text-[#1D3461] hover:bg-[#EEF4FA] transition-all"
+                            >
+                                <FilePlus className="w-4 h-4" />
+                                Selecionar Relatórios / Laudos
+                            </button>
+
+                            {reportPreviews.length > 0 && (
+                                <div className="space-y-2">
+                                    {reportPreviews.map((rep, idx) => (
+                                        <div key={idx} className="flex items-center gap-3 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+                                            <FileText className="w-5 h-5 text-[#1D3461] flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] font-bold text-[#0F172A] truncate">{rep.name}</p>
+                                                <p className="text-[10px] text-[#94A3B8] font-medium">{rep.size}</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeReport(idx)}
+                                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors flex-shrink-0"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </form>
                 )}

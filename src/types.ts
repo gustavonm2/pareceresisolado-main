@@ -1,6 +1,6 @@
 export type RiskRating = 'red' | 'orange' | 'yellow' | 'green' | 'blue';
 
-export type ProfessionalRole = 'triador' | 'parecerista';
+export type ProfessionalRole = 'triador' | 'parecerista' | 'telemedicina' | 'gestor_master';
 
 export interface ClinicMember {
     id: string;
@@ -10,6 +10,8 @@ export interface ClinicMember {
     role: ProfessionalRole;
     groupId: string;
     createdAt: string;
+    cpf?: string;
+    conselho?: string;
 }
 
 export interface ClinicGroup {

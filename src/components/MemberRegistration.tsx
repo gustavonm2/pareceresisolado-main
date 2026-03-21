@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserPlus, Eye, EyeOff, ClipboardList, Stethoscope, Check } from 'lucide-react';
-import { useAuth, loadGroups } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import type { ProfessionalRole } from '../types';
 
 const MemberRegistration: React.FC = () => {
     const navigate = useNavigate();
-    const { addMember } = useAuth();
+    const { addMember, getGroup } = useAuth();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -17,11 +17,12 @@ const MemberRegistration: React.FC = () => {
     const [showPwd, setShowPwd] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const inputCls =
         'w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D3461] focus:border-transparent transition-all';
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setError('');
         if (!name.trim() || !email.trim() || !password || !groupCode.trim()) {
             setError('Preencha todos os campos obrigatórios.');
@@ -36,34 +37,38 @@ const MemberRegistration: React.FC = () => {
             return;
         }
 
-        const groups = loadGroups();
-        const group = groups.find(g => g.id === groupCode.trim());
-        if (!group) {
-            setError('Código do grupo inválido. Verifique com o administrador.');
-            return;
-        }
+        setLoading(true);
+        try {
+            const group = await getGroup(groupCode.trim());
+            if (!group) {
+                setError('Código do grupo inválido. Verifique com o administrador.');
+                return;
+            }
 
-        const emailNorm = email.trim().toLowerCase();
-        const alreadyExists =
-            group.adminEmail.toLowerCase() === emailNorm ||
-            group.members.some(m => m.email.toLowerCase() === emailNorm);
+            const emailNorm = email.trim().toLowerCase();
+            const alreadyExists =
+                group.adminEmail.toLowerCase() === emailNorm ||
+                group.members.some(m => m.email.toLowerCase() === emailNorm);
 
-        if (alreadyExists) {
-            setError('Este e-mail já está cadastrado neste grupo.');
-            return;
-        }
+            if (alreadyExists) {
+                setError('Este e-mail já está cadastrado neste grupo.');
+                return;
+            }
 
-        const ok = addMember(groupCode.trim(), {
-            name: name.trim(),
-            email: emailNorm,
-            password,
-            role,
-        });
+            const ok = await addMember(groupCode.trim(), {
+                name: name.trim(),
+                email: emailNorm,
+                password,
+                role,
+            });
 
-        if (ok) {
-            setSuccess(true);
-        } else {
-            setError('Não foi possível cadastrar o membro. Tente novamente.');
+            if (ok === null) {
+                setSuccess(true);
+            } else {
+                setError('Não foi possível cadastrar o membro. Tente novamente.');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -212,9 +217,15 @@ const MemberRegistration: React.FC = () => {
 
                                 <button
                                     onClick={handleSubmit}
-                                    className="w-full bg-[#1D3461] hover:bg-[#162749] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#1D3461]/20 mt-2"
+                                    disabled={loading}
+                                    className="w-full bg-[#1D3461] hover:bg-[#162749] disabled:opacity-60 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#1D3461]/20 mt-2"
                                 >
-                                    <UserPlus className="w-4 h-4" /> Cadastrar como Membro
+                                    {loading ? (
+                                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                                    ) : (
+                                        <UserPlus className="w-4 h-4" />
+                                    )}
+                                    {loading ? 'Cadastrando...' : 'Cadastrar como Membro'}
                                 </button>
                             </div>
                         )}

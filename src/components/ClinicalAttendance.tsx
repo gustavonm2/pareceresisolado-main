@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { QueueItem, ChatMessage } from '../types';
 import { getMockPatientDetails, addPatientHistoryItem } from '../utils/patientData';
 import { updateOpinionStatus } from '../utils/opinionsData';
-import { addOpiniao, addRepasse } from '../utils/patientStore';
+import { addOpiniao, addRepasse, getClinicalImages, type ClinicalImage } from '../utils/patientStore';
 import { getGeminiChatResponse, resetChat } from '../services/gemini';
-import { ArrowLeft, Send, Bot, Loader2, CheckCircle, BookOpen, FileText, ArrowRightLeft } from 'lucide-react';
+import { ArrowLeft, Send, Bot, Loader2, CheckCircle, BookOpen, FileText, ArrowRightLeft, Images, X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import PrescriptionVisualizer from './PrescriptionVisualizer';
 import RepasseModal from './RepasseModal';
 
@@ -43,6 +43,10 @@ const ClinicalAttendance: React.FC<ClinicalAttendanceProps> = ({ patient, onBack
   const [showPrescription, setShowPrescription] = useState(false);
   const [showRepasseModal, setShowRepasseModal] = useState(false);
 
+  // Clinical images
+  const [clinicalImages, setClinicalImages] = useState<ClinicalImage[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitialized = useRef(false);
 
@@ -52,6 +56,8 @@ const ClinicalAttendance: React.FC<ClinicalAttendanceProps> = ({ patient, onBack
       resetChat();
       initializeChat();
     }
+    // Load clinical images for this patient
+    setClinicalImages(getClinicalImages(patient.id));
   }, []);
 
   const scrollToBottom = () => {
@@ -261,6 +267,93 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
 
   // --- RENDER ---
 
+  // ── Clinical Images Panel ─────────────────────────────────────────────────
+  const ImagePanel = () => (
+    clinicalImages.length === 0 ? null : (
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50">
+          <Images className="w-4 h-4 text-gray-500" />
+          <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Imagens do Caso</span>
+          <span className="ml-auto text-[10px] font-medium text-gray-400">{clinicalImages.length} imagem(ns)</span>
+        </div>
+        <div className="p-3 grid grid-cols-4 gap-2">
+          {clinicalImages.map((img, idx) => (
+            <button
+              key={img.id}
+              type="button"
+              onClick={() => setLightboxIndex(idx)}
+              className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 hover:scale-105 transition-all bg-gray-100"
+              title={img.caption}
+            >
+              <img src={img.url} alt={img.caption} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                <ZoomIn className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <span className="absolute bottom-0 left-0 right-0 text-[8px] px-1 py-0.5 bg-black/50 text-white truncate">
+                {img.uploadedBy === 'triador' ? 'Triador' : 'Paciente'}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  );
+
+  // ── Lightbox ──────────────────────────────────────────────────────────────
+  const Lightbox = () => {
+    if (lightboxIndex === null) return null;
+    const img = clinicalImages[lightboxIndex];
+    return (
+      <div
+        className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center"
+        onClick={() => setLightboxIndex(null)}
+      >
+        {/* Close */}
+        <button
+          onClick={() => setLightboxIndex(null)}
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Prev / Next */}
+        {lightboxIndex > 0 && (
+          <button
+            className="absolute left-4 p-2 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors"
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i ?? 1) - 1); }}
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
+        {lightboxIndex < clinicalImages.length - 1 && (
+          <button
+            className="absolute right-4 p-2 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors"
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i ?? 0) + 1); }}
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Image */}
+        <img
+          src={img.url}
+          alt={img.caption}
+          className="max-h-[80vh] max-w-[90vw] rounded-xl shadow-2xl object-contain"
+          onClick={e => e.stopPropagation()}
+        />
+
+        {/* Caption */}
+        <div className="mt-4 text-center">
+          <p className="text-white text-sm font-medium">{img.caption}</p>
+          <p className="text-gray-400 text-xs mt-1">
+            Enviado por: <span className="font-bold text-gray-200">{img.uploadedBy === 'triador' ? 'Triador(a)' : 'Paciente'}</span> · {img.uploadedAt}
+          </p>
+          <p className="text-gray-500 text-[11px] mt-1">{lightboxIndex + 1} / {clinicalImages.length}</p>
+        </div>
+      </div>
+    );
+  };
+
   // VIEW 2: REVIEW SCREEN (OPINION)
   if (stage === 'review_opinion') {
     return (
@@ -302,6 +395,12 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-grow">
           <div className="p-6 flex-grow overflow-y-auto w-full">
+            {/* Images Panel */}
+            {clinicalImages.length > 0 && (
+              <div className="mb-6">
+                <ImagePanel />
+              </div>
+            )}
 
             <div className="flex flex-col gap-6 max-w-full">
               <div className="flex flex-col">
@@ -381,6 +480,7 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
             }}
           />
         )}
+        <Lightbox />
       </div>
     );
   }
@@ -403,6 +503,13 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
 
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto bg-gray-50 border-x border-gray-200 p-4 md:p-6 space-y-6">
+        {/* Clinical images at top of chat */}
+        {clinicalImages.length > 0 && (
+          <div className="pb-2">
+            <ImagePanel />
+          </div>
+        )}
+
         {/* Welcome AI Message */}
 
         {messages.map((msg) => (
@@ -487,6 +594,7 @@ Por favor, descreva suas considerações e avaliação. Estruturarei a resposta 
           onCancel={() => setShowRepasseModal(false)}
         />
       )}
+      <Lightbox />
     </div>
   );
 };

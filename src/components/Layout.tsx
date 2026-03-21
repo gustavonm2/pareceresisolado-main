@@ -3,21 +3,117 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
     Share2, Settings, UserCircle, LogOut, Menu,
     Briefcase, Users, BarChart2, Activity, Shield,
-    ClipboardList, Video, Pill, FlaskConical, FileText, Stethoscope, Star, LifeBuoy
+    ClipboardList, Video, Pill, FlaskConical, FileText, Stethoscope, Star, LifeBuoy,
+    ChevronRight, FolderOpen, Image
 } from 'lucide-react';
 import { getOpenTicketsCount } from '../utils/patientStore';
 
 // ── Patient section items ──────────────────────────────────────────────────────
-const PATIENT_SECTIONS = [
-    { id: 'prontuario',  label: 'Meu Prontuário',    icon: ClipboardList },
-    { id: 'teleconsulta',label: 'Teleconsulta',       icon: Video },
-    { id: 'medicacoes',  label: 'Medicações',         icon: Pill },
-    { id: 'historico',   label: 'Hist. de Saúde',     icon: Shield },
-    { id: 'pareceres',   label: 'Pareceres Médicos',  icon: FileText },
-    { id: 'prescricoes', label: 'Prescrições',         icon: Stethoscope },
-    { id: 'exames',      label: 'Exames',              icon: FlaskConical },
-    { id: 'suporte',     label: 'Suporte Técnico',     icon: LifeBuoy },
+const PATIENT_TOP_SECTIONS = [
+    { id: 'prontuario',   label: 'Minhas Consultas',  icon: ClipboardList },
+    { id: 'teleconsulta', label: 'Teleconsulta',       icon: Video },
+    { id: 'pareceres',    label: 'Pareceres Médicos',  icon: FileText },
 ];
+
+const PRONTUARIO_SUB = [
+    { id: 'medicacoes',  label: 'Medicações',          icon: Pill },
+    { id: 'historico',   label: 'Hist. de Saúde',      icon: Shield },
+    { id: 'prescricoes', label: 'Prescrições',          icon: Stethoscope },
+    { id: 'exames',      label: 'Exames',               icon: FlaskConical },
+    { id: 'imagens',     label: 'Imagens Clínicas',     icon: Image },
+    { id: 'relatorios',  label: 'Relatórios Médicos',   icon: FileText },
+];
+
+const PATIENT_BOTTOM_SECTIONS = [
+    { id: 'suporte', label: 'Suporte Técnico', icon: LifeBuoy },
+];
+
+// ── PatientMenu sub-component ─────────────────────────────────────────────────
+const SidebarBtn: React.FC<{
+    id: string; label: string; icon: React.ElementType;
+    active: boolean; indent?: boolean;
+    onClick: () => void;
+}> = ({ label, icon: Icon, active, indent, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 py-2.5 text-[12px] transition-all ${indent ? 'pl-9 pr-5' : 'px-5'}`}
+        style={{
+            fontWeight: active ? 600 : 500,
+            backgroundColor: active ? '#E9EEF5' : 'transparent',
+            color: active ? '#162749' : '#6B7280',
+            boxShadow: active ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)' : 'none',
+            borderLeft: active ? '3px solid #2C4E6E' : '3px solid transparent',
+            transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
+        onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+    >
+        <Icon className="w-4 h-4 flex-shrink-0" style={{ color: active ? '#1D3461' : '#94A3B8' }} />
+        {label}
+    </button>
+);
+
+const PatientMenu: React.FC<{
+    activeSection: string;
+    onActivate: (id: string) => void;
+}> = ({ activeSection, onActivate }) => {
+    const [prontuarioOpen, setProntuarioOpen] = useState(
+        PRONTUARIO_SUB.some(s => s.id === activeSection)
+    );
+    return (
+        <>
+            {PATIENT_TOP_SECTIONS.map(({ id, label, icon }) => (
+                <SidebarBtn key={id} id={id} label={label} icon={icon}
+                    active={activeSection === id}
+                    onClick={() => onActivate(id)}
+                />
+            ))}
+
+            {/* Collapsible group: Meu Prontuário */}
+            <button
+                onClick={() => setProntuarioOpen(o => !o)}
+                className="w-full flex items-center gap-3 px-5 py-2.5 text-[12px] transition-all"
+                style={{
+                    fontWeight: prontuarioOpen ? 600 : 500,
+                    color: prontuarioOpen ? '#162749' : '#6B7280',
+                    borderLeft: '3px solid transparent',
+                    transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+            >
+                <FolderOpen className="w-4 h-4 flex-shrink-0" style={{ color: prontuarioOpen ? '#1D3461' : '#94A3B8' }} />
+                <span className="flex-1 text-left">Meu Prontuário</span>
+                <ChevronRight
+                    className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200"
+                    style={{
+                        color: '#94A3B8',
+                        transform: prontuarioOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                    }}
+                />
+            </button>
+
+            {prontuarioOpen && (
+                <div className="border-l-2 border-[#E2E8F0] ml-7 mr-2">
+                    {PRONTUARIO_SUB.map(({ id, label, icon }) => (
+                        <SidebarBtn key={id} id={id} label={label} icon={icon}
+                            active={activeSection === id}
+                            indent
+                            onClick={() => onActivate(id)}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {PATIENT_BOTTOM_SECTIONS.map(({ id, label, icon }) => (
+                <SidebarBtn key={id} id={id} label={label} icon={icon}
+                    active={activeSection === id}
+                    onClick={() => onActivate(id)}
+                />
+            ))}
+        </>
+    );
+};
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -114,34 +210,10 @@ const Sidebar = () => {
                 </p>
 
                 {isPatient ? (
-                    PATIENT_SECTIONS.map(({ id, label, icon: Icon }) => {
-                        const active = activeSection === id;
-                        return (
-                            <button
-                                key={id}
-                                onClick={() => activateSection(id)}
-                                className="w-full flex items-center gap-3 px-5 py-3 text-[12px] transition-all"
-                                style={{
-                                    fontWeight: active ? 600 : 500,
-                                    backgroundColor: active ? '#E9EEF5' : 'transparent',
-                                    color: active ? '#162749' : '#6B7280',
-                                    boxShadow: active
-                                        ? 'inset 2px 2px 6px rgba(0,0,0,0.08), inset -2px -2px 6px rgba(255,255,255,0.7)'
-                                        : 'none',
-                                    borderTop: '1px solid transparent',
-                                    borderBottom: '1px solid transparent',
-                                    borderRight: '1px solid transparent',
-                                    borderLeft: active ? '3px solid #2C4E6E' : '3px solid transparent',
-                                    transition: 'all 0.2s ease',
-                                }}
-                                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#F1F5F9'; }}
-                                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
-                            >
-                                <Icon className="w-4 h-4 flex-shrink-0" style={{ color: active ? '#1D3461' : '#94A3B8' }} />
-                                {label}
-                            </button>
-                        );
-                    })
+                    <PatientMenu
+                        activeSection={activeSection}
+                        onActivate={activateSection}
+                    />
                 ) : (
                     menuItems.map(item => {
                         const active = isActive(item.path);

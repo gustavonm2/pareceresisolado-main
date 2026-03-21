@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { QueueItem } from '../types';
 import { getMockPatientDetails } from '../utils/patientData';
 import {
   ArrowLeft, Phone, Mail, User, Calendar, Activity,
-  Pill, Stethoscope, FileText as FileIcon, ChevronDown, Sparkles, PlusSquare, Video, ArrowRightLeft
+  Pill, Stethoscope, FileText as FileIcon, ChevronDown, Sparkles, PlusSquare, Video, ArrowRightLeft,
+  ImagePlus, Trash2, Images, ZoomIn, X, ChevronLeft, ChevronRight, FileText, FilePlus, ExternalLink
 } from 'lucide-react';
 import ClinicalAttendance from './ClinicalAttendance';
 import VideoCallOverlay from './VideoCallOverlay';
 import RepasseModal from './RepasseModal';
-import { addRepasse } from '../utils/patientStore';
+import { addRepasse, getClinicalImages, addClinicalImage, getClinicalReports, addClinicalReport, type ClinicalImage, type ClinicalReport } from '../utils/patientStore';
 
 interface PatientDetailsProps {
   patientId: string;
@@ -51,6 +52,65 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
   const patient = getMockPatientDetails(patientId, initialData);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [showRepasseModal, setShowRepasseModal] = useState(false);
+
+  // Clinical images
+  const [clinicalImages, setClinicalImages] = useState<ClinicalImage[]>(() => getClinicalImages(patientId));
+  const [imagePreviews, setImagePreviews] = useState<{ dataUrl: string; name: string }[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreviews(prev => [...prev, { dataUrl: ev.target?.result as string, name: file.name }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removePreview = (idx: number) => setImagePreviews(prev => prev.filter((_, i) => i !== idx));
+
+  // Clinical reports
+  const [clinicalReports, setClinicalReports] = useState<ClinicalReport[]>(() => getClinicalReports(patientId));
+  const [reportPreviews, setReportPreviews] = useState<{ dataUrl: string; name: string; size: string }[]>([]);
+  const [selectedReport, setSelectedReport] = useState<ClinicalReport | null>(null);
+  const reportInputRef = useRef<HTMLInputElement>(null);
+
+  const handleReportUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      const size = file.size < 1024 * 1024
+        ? `${(file.size / 1024).toFixed(1)} KB`
+        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+      reader.onload = (ev) => {
+        setReportPreviews(prev => [...prev, { dataUrl: ev.target?.result as string, name: file.name, size }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    if (reportInputRef.current) reportInputRef.current.value = '';
+  };
+
+  const removeReportPreview = (idx: number) => setReportPreviews(prev => prev.filter((_, i) => i !== idx));
+
+  const handleSaveReports = () => {
+    reportPreviews.forEach(rep => {
+      addClinicalReport({ patientId, url: rep.dataUrl, fileName: rep.name, fileSize: rep.size, uploadedBy: 'triador' });
+    });
+    setClinicalReports(getClinicalReports(patientId));
+    setReportPreviews([]);
+  };
+
+    const handleSaveImages = () => {
+    imagePreviews.forEach(img => {
+      addClinicalImage({ patientId, url: img.dataUrl, caption: img.name, uploadedBy: 'triador' });
+    });
+    setClinicalImages(getClinicalImages(patientId));
+    setImagePreviews([]);
+  };
 
   const handleRepasse = (motivo: string) => {
     addRepasse({
@@ -285,6 +345,244 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientId, onBack, onSt
                 <p className="text-[11px] text-[#64748B] font-medium pt-2">Nenhum exame anexado.</p>
               )}
             </AccordionItem>
+
+            {/* ── Imagens Clínicas ──────────────────────────────────── */}
+            <AccordionItem
+              icon={Images}
+              title="Imagens Clínicas do Caso"
+              rightElement={
+                <span className="text-[11px] font-bold text-[#1D3461] bg-[#EEF4FA] px-2.5 py-1 rounded-lg">
+                  {clinicalImages.length} imagem(ns)
+                </span>
+              }
+            >
+              <div className="space-y-4">
+                {/* Upload area */}
+                <div className="flex flex-col gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#CBD5E1] rounded-xl text-[11px] font-bold text-[#64748B] hover:border-[#1D3461] hover:text-[#1D3461] hover:bg-[#EEF4FA] transition-all"
+                  >
+                    <ImagePlus className="w-4 h-4" />
+                    Adicionar Imagens ao Caso
+                  </button>
+
+                  {/* Previews before saving */}
+                  {imagePreviews.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-4 gap-2">
+                        {imagePreviews.map((img, idx) => (
+                          <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-[#E2E8F0] bg-[#F8FAFC]">
+                            <img src={img.dataUrl} alt={img.name} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removePreview(idx)}
+                              className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSaveImages}
+                        className="w-full py-2.5 bg-[#10B981] text-white rounded-xl text-[11px] font-bold hover:bg-[#059669] transition-colors flex items-center justify-center gap-2"
+                      >
+                        <ImagePlus className="w-4 h-4" />
+                        Salvar {imagePreviews.length} imagem(ns) no caso
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Saved images gallery */}
+                {clinicalImages.length > 0 ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    {clinicalImages.map((img, idx) => (
+                      <button
+                        key={img.id}
+                        type="button"
+                        onClick={() => setLightboxIndex(idx)}
+                        className="relative group aspect-square rounded-lg overflow-hidden border border-[#E2E8F0] bg-[#F8FAFC] hover:border-[#1D3461] hover:scale-105 transition-all"
+                      >
+                        <img src={img.url} alt={img.caption} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 flex items-center justify-center transition-colors">
+                          <ZoomIn className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/55 px-1.5 py-1">
+                          <p className="text-[9px] text-white font-medium truncate">{img.uploadedBy === 'triador' ? 'Triador(a)' : 'Paciente'}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-[#64748B] font-medium">Nenhuma imagem anexada ao caso ainda.</p>
+                )}
+              </div>
+            </AccordionItem>
+
+
+            {/* ── Relatórios Médicos ──────────────────────────────── */}
+            <AccordionItem
+              icon={FileText}
+              title="Relatórios Médicos do Caso"
+              rightElement={
+                <span className="text-[11px] font-bold text-[#1D3461] bg-[#EEF4FA] px-2.5 py-1 rounded-lg">
+                  {clinicalReports.length} documento(s)
+                </span>
+              }
+            >
+              <div className="space-y-4">
+                <div className="flex flex-col gap-2">
+                  <input
+                    ref={reportInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleReportUpload}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => reportInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#CBD5E1] rounded-xl text-[11px] font-bold text-[#64748B] hover:border-[#1D3461] hover:text-[#1D3461] hover:bg-[#EEF4FA] transition-all"
+                  >
+                    <FilePlus className="w-4 h-4" />
+                    Adicionar Relatórios / Laudos ao Caso
+                  </button>
+
+                  {reportPreviews.length > 0 && (
+                    <div className="space-y-2">
+                      {reportPreviews.map((rep, idx) => (
+                        <div key={idx} className="flex items-center gap-3 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+                          <FileText className="w-5 h-5 text-[#1D3461] flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-[#0F172A] truncate">{rep.name}</p>
+                            <p className="text-[10px] text-[#94A3B8] font-medium">{rep.size}</p>
+                          </div>
+                          <button type="button" onClick={() => removeReportPreview(idx)} className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      <button type="button" onClick={handleSaveReports} className="w-full py-2.5 bg-[#10B981] text-white rounded-xl text-[11px] font-bold hover:bg-[#059669] transition-colors flex items-center justify-center gap-2">
+                        <FilePlus className="w-4 h-4" />
+                        Salvar {reportPreviews.length} documento(s) no caso
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {clinicalReports.length > 0 ? (
+                  <div className="space-y-2">
+                    {clinicalReports.map((rep) => (
+                      <div key={rep.id} className="flex items-center gap-3 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl hover:border-[#1D3461] hover:bg-[#EEF4FA] transition-all group">
+                        <div className="w-10 h-10 rounded-lg bg-[#1D3461]/10 flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-5 h-5 text-[#1D3461]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-bold text-[#0F172A] truncate">{rep.fileName}</p>
+                          <p className="text-[10px] text-[#94A3B8] font-medium">
+                            {rep.fileSize} · {rep.uploadedBy === 'triador' ? 'Triador(a)' : 'Paciente'} · {rep.uploadedAt}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReport(rep)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1D3461] text-white rounded-lg text-[10px] font-bold hover:bg-[#162749] transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Abrir
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-[#64748B] font-medium">Nenhum relatório anexado ao caso ainda.</p>
+                )}
+              </div>
+            </AccordionItem>
+
+            {/* Report Viewer Modal */}
+            {selectedReport && (
+              <div
+                className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4"
+                onClick={() => setSelectedReport(null)}
+              >
+                <div
+                  className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
+                  onClick={e => e.stopPropagation()}
+                >
+                  {/* Modal header */}
+                  <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <FileText className="w-5 h-5 text-[#1D3461]" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-bold text-[#0F172A] truncate">{selectedReport.fileName}</p>
+                      <p className="text-[10px] text-[#94A3B8] font-medium">
+                        {selectedReport.fileSize} · Enviado por {selectedReport.uploadedBy === 'triador' ? 'Triador(a)' : 'Paciente'} · {selectedReport.uploadedAt}
+                      </p>
+                    </div>
+                    <button onClick={() => setSelectedReport(null)} className="p-2 rounded-lg hover:bg-[#F1F5F9] text-[#64748B] transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  {/* Document viewer */}
+                  <div className="flex-1 overflow-hidden bg-[#F1F5F9]">
+                    {selectedReport.url.startsWith('data:image') ? (
+                      <img src={selectedReport.url} alt={selectedReport.fileName} className="w-full h-full object-contain p-4" />
+                    ) : (
+                      <iframe
+                        src={selectedReport.url}
+                        title={selectedReport.fileName}
+                        className="w-full h-full border-none"
+                        style={{ minHeight: '70vh' }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Lightbox */}
+            {lightboxIndex !== null && (() => {
+              const img = clinicalImages[lightboxIndex];
+              return (
+                <div
+                  className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center"
+                  onClick={() => setLightboxIndex(null)}
+                >
+                  <button onClick={() => setLightboxIndex(null)} className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/25 text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                  {lightboxIndex > 0 && (
+                    <button className="absolute left-4 p-2 rounded-full bg-white/10 hover:bg-white/25 text-white" onClick={e => { e.stopPropagation(); setLightboxIndex(i => (i ?? 1) - 1); }}>
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                  )}
+                  {lightboxIndex < clinicalImages.length - 1 && (
+                    <button className="absolute right-4 p-2 rounded-full bg-white/10 hover:bg-white/25 text-white" onClick={e => { e.stopPropagation(); setLightboxIndex(i => (i ?? 0) + 1); }}>
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  )}
+                  <img src={img.url} alt={img.caption} className="max-h-[80vh] max-w-[90vw] rounded-xl shadow-2xl object-contain" onClick={e => e.stopPropagation()} />
+                  <div className="mt-4 text-center">
+                    <p className="text-white text-sm font-medium">{img.caption}</p>
+                    <p className="text-gray-400 text-xs mt-1">Enviado por: <span className="font-bold text-gray-200">{img.uploadedBy === 'triador' ? 'Triador(a)' : 'Paciente'}</span> · {img.uploadedAt}</p>
+                    <p className="text-gray-500 text-[11px] mt-1">{lightboxIndex + 1} / {clinicalImages.length}</p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Chat Component rendering inline here if isAttending is true */}

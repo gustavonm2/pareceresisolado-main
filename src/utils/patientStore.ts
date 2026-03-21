@@ -56,6 +56,7 @@ const OPINOES_KEY = 'pc_opinoes';
 const CONSULTA_KEY = 'pc_consulta';
 const MODALIDADE_KEY = 'pc_modalidade';
 const TRIAGENS_KEY = 'pc_triagens';
+const CLINICAL_IMAGES_KEY = 'pc_clinical_images';
 
 
 // ── Opiniões / Pareceres ──────────────────────────────────────────────────────
@@ -415,3 +416,97 @@ export function updateRepasseStatus(id: string, status: StoredRepasse['status'])
     const updated = existing.map(r => r.id === id ? { ...r, status } : r);
     localStorage.setItem(REPASSES_KEY, JSON.stringify(updated));
 }
+
+// ── Imagens Clínicas ──────────────────────────────────────────────────────────
+
+export interface ClinicalImage {
+    id: string;
+    patientId: string;
+    /** Base64 data URL (e.g. "data:image/jpeg;base64,...") */
+    url: string;
+    caption: string;
+    uploadedBy: 'triador' | 'paciente';
+    uploadedAt: string; // dd/mm/yyyy hh:mm
+}
+
+export function getClinicalImages(patientId?: string): ClinicalImage[] {
+    try {
+        const raw = localStorage.getItem(CLINICAL_IMAGES_KEY);
+        const all: ClinicalImage[] = raw ? JSON.parse(raw) : [];
+        if (patientId) return all.filter(img => img.patientId === patientId);
+        return all;
+    } catch {
+        return [];
+    }
+}
+
+export function addClinicalImage(
+    data: Omit<ClinicalImage, 'id' | 'uploadedAt'>
+): ClinicalImage {
+    const existing = getClinicalImages();
+    const now = new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    });
+    const newImage: ClinicalImage = {
+        ...data,
+        id: `img_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        uploadedAt: now,
+    };
+    localStorage.setItem(CLINICAL_IMAGES_KEY, JSON.stringify([...existing, newImage]));
+    return newImage;
+}
+
+export function removeClinicalImage(imageId: string): void {
+    const existing = getClinicalImages();
+    localStorage.setItem(CLINICAL_IMAGES_KEY, JSON.stringify(existing.filter(img => img.id !== imageId)));
+}
+
+// ── Relatórios Médicos (PDFs / documentos) ────────────────────────────────────
+
+export interface ClinicalReport {
+    id: string;
+    patientId: string;
+    /** Base64 data URL (e.g. "data:application/pdf;base64,...") */
+    url: string;
+    fileName: string;
+    fileSize: string; // human-readable e.g. "1.2 MB"
+    uploadedBy: 'triador' | 'paciente';
+    uploadedAt: string; // dd/mm/yyyy hh:mm
+}
+
+const CLINICAL_REPORTS_KEY = 'pc_clinical_reports';
+
+export function getClinicalReports(patientId?: string): ClinicalReport[] {
+    try {
+        const raw = localStorage.getItem(CLINICAL_REPORTS_KEY);
+        const all: ClinicalReport[] = raw ? JSON.parse(raw) : [];
+        if (patientId) return all.filter(r => r.patientId === patientId);
+        return all;
+    } catch {
+        return [];
+    }
+}
+
+export function addClinicalReport(
+    data: Omit<ClinicalReport, 'id' | 'uploadedAt'>
+): ClinicalReport {
+    const existing = getClinicalReports();
+    const now = new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    });
+    const newReport: ClinicalReport = {
+        ...data,
+        id: `rep_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        uploadedAt: now,
+    };
+    localStorage.setItem(CLINICAL_REPORTS_KEY, JSON.stringify([...existing, newReport]));
+    return newReport;
+}
+
+export function removeClinicalReport(reportId: string): void {
+    const existing = getClinicalReports();
+    localStorage.setItem(CLINICAL_REPORTS_KEY, JSON.stringify(existing.filter(r => r.id !== reportId)));
+}
+
